@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+<meta charset="UTF-8">
+<title>Collision detection</title>
+<style>
+</style>
+</head>
+<body translate="no" >
+<script src='https://cdnjs.cloudflare.com/ajax/libs/pixi.js/4.5.1/pixi.min.js'></script>
+<script >
+const application_size = 512;
+const box_size = 32;
+const max_missle_speed = 10;
+const flame_speed = 2;
+const flame_interval = 2;
+const flame_fade = 0.05;
+
+let app = new PIXI.Application({width: application_size, height: application_size});
+document.body.appendChild(app.view);
+
+var stage = new PIXI.Container();
+var missile_container = new PIXI.Container();
+var box_container = new PIXI.Container();
+var missile;
+var boxX;
+var boxY;
+var rad;
+var flames = [];
+var flame_ticker = 0;
+var blocks = [];
+var missle_hit = false;
+var missle_width = box_size / 4;
+var missle_height = box_size / 2;
+
+stage.addChild(missile_container);
+stage.addChild(box_container);
+app.stage = stage;
+
+function placeBox() {
+  rad = Math.random() * Math.PI * 2;
+  var distance = (Math.random() * application_size / 4) + application_size / 6;
+  
+  var x = distance;
+  var y = 0;
+  
+  var px = x * Math.cos(rad) - y * Math.sin(rad); 
+  var py = x * Math.sin(rad) + y * Math.cos(rad);
+  
+  boxX = application_size/2 + px;
+  boxY = application_size/2 + py;
+
+  createBoxQuaterSet(boxX, boxY, -1, -1);
+  createBoxQuaterSet(boxX, boxY, 1, -1);
+  createBoxQuaterSet(boxX, boxY, -1, 1);
+  createBoxQuaterSet(boxX, boxY, 1, 1);
+  blocks.forEach(function(item) {box_container.addChild(item);} );
+}
+
+function createBoxQuater(x, y, x_mod, y_mod, size_mod, color) {
+  var box1 = new PIXI.Graphics();
+  box1.beginFill(color);
+  box1.drawRect(0, 0, box_size/size_mod, box_size/size_mod);
+  box1.endFill();
+  box1.position.x = x - ( x_mod > 0 ? 0 : (box_size/size_mod));
+  box1.position.y = y - ( y_mod > 0 ? 0 : (box_size/size_mod));
+  box1.vx = 1 / size_mod * x_mod;
+  box1.vy = 1 / size_mod * y_mod;
+  blocks.push(box1);
+}
+
+function createBoxQuaterSet(x, y, x_mod, y_mod) {
+  a = addRandomAngle(x_mod, y_mod);
+  createBoxQuater(x, y, a[0], a[1], 8, 0xff8000);
+  a = addRandomAngle(x_mod, y_mod);
+  createBoxQuater(x, y, a[0], a[1], 6, 0xff8000);
+  a = addRandomAngle(x_mod, y_mod);
+  createBoxQuater(x, y, a[0], a[1], 4, 0xff8000);
+  createBoxQuater(x, y, x_mod, y_mod, 2, 0xc0c0c0);
+}
+
+function addRandomAngle(x, y) {
+  base_angle = 90;
+  random = (Math.random() * (Math.PI/180) * base_angle) - (Math.PI/180 * base_angle/2);
+  px = x * Math.cos(random) - y * Math.sin(random); 
+  py = x * Math.sin(random) + y * Math.cos(random);
+  return [px,py];
+}
+
+function placeMissle() {
+  
+  missile = new PIXI.Graphics();
+  missile.beginFill(0xd0d0d0);
+  missile.drawRect(0, 0, box_size / 4, box_size / 2);
+  missile.endFill();
+  missile_container.addChild(missile);
+  missile.vy = 1;
+  
+  missile_container.x = application_size / 2;
+  missile_container.y = application_size / 2;
+  missile_container.pivot.x = missle_width / 2;
+  missile_container.pivot.y = missle_height / 2;
+  
+  var missle_rad = rad - Math.PI / 2;
+  missile_container.rotation = missle_rad;
+  
+  /// Temp object
+  /*blipp = new PIXI.Graphics();
+  blipp.beginFill(0xff0000);
+  blipp.drawRect(application_size / 2, application_size / 2, 1, 1);
+  blipp.endFill();
+  stage.addChild(blipp);*/
+  
+}
+
+function initiate() {
+  missile_container.removeChildren();
+  box_container.removeChildren();
+
+  flames = [];
+  flame_ticker = 0;
+  blocks = [];
+
+  placeBox();
+  placeMissle();
+  missle_hit = false;
+}
+
+function gameLoop(delta){
+  updateFlames();
+  moveMissle();
+  
+  if(!missle_hit) {
+    detectCollision();
+  
+    if(missle_hit) {
+      missile_container.removeChild(missile);
+    }
+  }
+  
+  if(missle_hit){
+      moveBlocks();
+  }
+ 
+  if(blocks.length == 0 && flames.length == 0)
+    initiate();
+}
+
+function moveBlocks(){
+  blocks.forEach(function(item) {
+      item.x += item.vx*2;
+      item.y += item.vy*2;
+      item.alpha -= (Math.abs(item.vy) > Math.abs(item.vx) ? Math.abs(item.vy / 20) : Math.abs(item.vx / 20))*2;
+    });
+    
+    while(blocks.length > 0 && blocks[0].alpha < 0){
+      blocks[0].destroy();
+      blocks.shift();
+    }
+}
+
+function moveMissle(){
+  if(missile.vy < max_missle_speed)
+    missile.vy =  missile.vy + 0.1;
+  missile.position.y += missile.vy;
+}
+
+function detectCollision() {
+  // Get Missile Point
+  var missle_rad = rad - Math.PI / 2;
+  
+  var x = 0;
+  var y = missile.position.y + missle_height/2;
+  
+  var px = x * Math.cos(missle_rad) - y * Math.sin(missle_rad); 
+  var py = x * Math.sin(missle_rad) + y * Math.cos(missle_rad);
+
+  px += application_size / 2;
+  py += application_size / 2;
+  
+  /*blipp = new PIXI.Graphics();
+  blipp.beginFill(0x00ffff);
+  blipp.drawRect(px, py, 1, 1);
+  blipp.endFill();
+  stage.addChild(blipp);*/
+  
+  var boxX1 = boxX - box_size/2;
+  var boxX2 = boxX + box_size/2;
+  var boxY1 = boxY - box_size/2;
+  var boxY2 = boxY + box_size/2;
+  
+  if(boxX1 < px && px < boxX2 &&
+     boxY1 < py && py < boxY2)
+     missle_hit = true;
+}
+
+function updateFlames(){
+  // If needed add new flame
+  if(!missle_hit && flame_ticker >= flame_interval) {
+    var flame = new PIXI.Graphics();
+    flame.beginFill(0xff8000);
+    flame.drawRect(0, 0, box_size / 4, box_size / 8);
+    flame.endFill();
+    flame.position.x = missile.x;
+    flame.position.y = missile.y;
+    flame.vx = 0;
+    flame.vy = flame_speed * -1;
+    missile_container.addChild(flame);
+    missile_container.setChildIndex(flame, 0);
+    flames.push(flame);
+    flame_ticker = 0;
+  }
+  
+  // Move flame
+  flames.forEach(function(flame) {
+    flame.position.x += flame.vx;
+    flame.position.y += flame.vy;
+    flame.alpha -= flame_fade;
+  });
+
+  // Remove invisible flames
+  while(flames.length > 0 && flames[0].alpha < 0){
+    flames[0].destroy();
+    flames.shift();
+  }
+
+  // Increase call count
+  flame_ticker++;
+}
+
+initiate();
+
+app.ticker.add(delta => gameLoop(delta));
+
+</script>
+</body>
+</html>

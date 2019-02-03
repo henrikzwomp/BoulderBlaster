@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+<meta charset="UTF-8">
+<title>Missle Test</title>
+<style>
+</style>
+</head>
+<body translate="no" >
+<script src='https://cdnjs.cloudflare.com/ajax/libs/pixi.js/4.5.1/pixi.min.js'></script>
+<script >
+const application_size = 512;
+const box_size = 32;
+const max_missle_speed = 10;
+const flame_speed = 12;
+const flame_interval = 2;
+const flame_fade = 0.02;
+
+var flames = [];
+var missile_container = new PIXI.Container();
+var flame_ticker = 0;
+
+
+let app = new PIXI.Application({width: application_size, height: application_size});
+document.body.appendChild(app.view);
+
+function gameLoop(delta){
+  updateFlames();
+  moveMissle();
+  removeInvisibleChildren();
+  
+  // If container is empty, restart
+  if(missile_container.children.length == 0)
+    StartNewMissle();
+}
+
+function moveMissle(){
+  if(missile_container.vy < max_missle_speed)
+    missile_container.vy =  missile_container.vy + 0.1;
+  missile_container.position.y -= missile_container.vy;
+}
+
+function removeInvisibleChildren() {
+  items = missile_container.children.slice();
+  items.forEach(function(item) {
+    if(missile_container.x + item.x > application_size || 
+       missile_container.y + item.y > application_size || 
+       missile_container.x + item.x + item.height < 0 || 
+       missile_container.y + item.y + item.width < 0)
+    {
+      missile_container.removeChild(item);
+    }
+  });
+}
+
+function updateFlames(){
+  // If needed add new flame
+  if(flame_ticker >= flame_interval) {
+    var flame = new PIXI.Graphics();
+    flame.beginFill(0xff8000);
+    flame.drawRect(0, 0, box_size / 4, box_size / 8);
+    flame.endFill();
+    flame.position.x = 0;
+    flame.position.y = box_size / 2 - box_size / 8;
+    flame.vx = 0;
+    flame.vy = flame_speed;
+    missile_container.addChild(flame);
+    missile_container.setChildIndex(flame, 0);
+    flames.push(flame);
+    flame_ticker = 0;
+  }
+  
+  // Move flame
+  flames.forEach(function(flame) {
+    flame.position.x += flame.vx;
+    flame.position.y += flame.vy;
+    flame.alpha -= flame_fade;
+  });
+
+  // Remove invisible flames
+  if(flames.length > 0 && flames[0].alpha < 0){
+    flames[0].destroy();
+    flames.shift();
+  }
+  
+  // Increase call count
+  flame_ticker++;
+}
+
+function initiateStage() {
+  stage = new PIXI.Container();
+  app.stage = stage;
+  
+  StartNewMissle();
+  stage.addChild(missile_container);
+}
+
+function StartNewMissle() {
+  var box1 = new PIXI.Graphics();
+  box1.beginFill(0xd0d0d0);
+  box1.drawRect(0, 0, box_size / 4, box_size / 2);
+  box1.endFill();
+  box1.position.x = 0;
+  box1.position.y = 0;
+  missile_container.addChild(box1);
+  
+  missile_container.position.y = application_size-64;
+  missile_container.position.x = Math.floor(Math.random() * (application_size-box_size - box_size*2)) + box_size; 
+  missile_container.vy = 1;
+}
+
+initiateStage();
+app.ticker.add(delta => gameLoop(delta));
+</script>
+</body>
+</html>

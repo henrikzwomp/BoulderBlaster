@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+<meta charset="UTF-8">
+<title>Box Blast</title>
+<style>
+body {
+  background-color: #404040;
+  text-align: center;
+}
+</style>
+</head>
+<body translate="no" >
+<script src='https://cdnjs.cloudflare.com/ajax/libs/pixi.js/4.5.1/pixi.min.js'></script>
+<script >
+var application_size = 512;
+var box_size = 32;
+var game_stage;
+var blocks = [];
+var start_at = -30;
+var reset_at = 140;
+var reset_timer = start_at;
+
+let app = new PIXI.Application({width: application_size, height: application_size});
+
+document.body.appendChild(app.view);
+
+app.ticker.add(delta => gameLoop(delta));
+
+initiate_stage();
+
+function initiate_stage(){
+  blocks = [];
+
+  createBoxSet(-1, -1);
+  createBoxSet(1, -1);
+  createBoxSet(-1, 1);
+  createBoxSet(1, 1);
+
+  stage = new PIXI.Container();
+  blocks.forEach(function(item) {stage.addChild(item);} );
+  app.stage = stage;
+}
+
+function createBox(x_mod, y_mod, size_mod, color) {
+  var box1 = new PIXI.Graphics();
+  box1.beginFill(color);
+  box1.drawRect(0, 0, box_size/size_mod, box_size/size_mod);
+  box1.endFill();
+  box1.position.x = (application_size/2)- ( x_mod > 0 ? 0 : (box_size/size_mod));
+  box1.position.y = (application_size/2)- ( y_mod > 0 ? 0 : (box_size/size_mod));
+  box1.vx = 1 / size_mod * x_mod;
+  box1.vy = 1 / size_mod * y_mod;
+  blocks.push(box1);
+}
+
+function createBoxSet(x_mod, y_mod) {
+  a = addRandomAngle(x_mod, y_mod);
+  createBox(a[0], a[1], 8, 0xff8000);
+  a = addRandomAngle(x_mod, y_mod);
+  createBox(a[0], a[1], 6, 0xff8000);
+  a = addRandomAngle(x_mod, y_mod);
+  createBox(a[0], a[1], 4, 0xff8000);
+  //a = addRandomAngle(x_mod, y_mod);
+  //createBox(a[0], a[1], 2, 0xff8000);
+  createBox(x_mod, y_mod, 2, 0xc0c0c0);
+}
+
+function addRandomAngle(x, y) {
+  base_angle = 90;
+  random = (Math.random() * (Math.PI/180) * base_angle) - (Math.PI/180 * base_angle/2);
+  px = x * Math.cos(random) - y * Math.sin(random); 
+  py = x * Math.sin(random) + y * Math.cos(random);
+  return [px,py];
+}
+
+function gameLoop(delta){
+  reset_timer++;
+  
+  if(reset_timer >= 0) {
+    blocks.forEach(function(item) {
+      item.x += item.vx*2;
+      item.y += item.vy*2;
+      item.alpha -= Math.abs(item.vy) > Math.abs(item.vx) ? Math.abs(item.vy / 20) : Math.abs(item.vx / 20);
+    });
+  }
+  
+  if(reset_timer >= reset_at ){
+    reset_timer = start_at;
+    initiate_stage();
+  }
+  
+}
+</script>
+</body>
+</html>

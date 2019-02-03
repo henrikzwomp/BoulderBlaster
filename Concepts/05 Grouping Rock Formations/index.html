@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+<meta charset="UTF-8">
+<title>Grouping Rock Formations</title>
+<style>
+</style>
+</head>
+<body translate="no" >
+<script src='https://cdnjs.cloudflare.com/ajax/libs/pixi.js/4.5.1/pixi.min.js'></script>
+<script >
+var application_size = 512;
+var boxSize = 32;
+var grid_squares = 16;
+var colors = [0xff0000, 0x00ff00, 0x0000ff, 0xffff00, 0xff00ff, 0x00ffff];
+
+var stage;
+var gridMatrix;
+var groupCounter = 1;
+
+let app = new PIXI.Application({width: application_size, height: application_size});
+document.body.appendChild(app.view);
+document.addEventListener('keydown', onKeyDown);
+
+function initiate() {
+  groupCounter = 1;
+  stage = new PIXI.Container();
+  app.stage = stage;
+  
+  createGrid();
+  groupFormations();
+  markGroups();
+  console.log("worked :)");
+}
+
+function createGrid(){
+  gridMatrix = new Array(grid_squares);
+  for(var i = 0; i < gridMatrix.length; i++) {
+    gridMatrix[i] = new Array(grid_squares); 
+  }
+  
+  for(var i = 0; i < gridMatrix.length; i++) {
+    for(var j = 0; j < gridMatrix[i].length; j++){
+      gridMatrix[i][j] = {rock:(Math.random() > 0.5 ? true : false), group: 0};
+    }
+  }
+  
+  for(var i = 0; i < gridMatrix.length; i++) {
+    for(var j = 0; j < gridMatrix[i].length; j++){
+      if(gridMatrix[i][j].rock === true){
+        drawSquare(i, j);
+      }
+    }
+  }
+}
+
+function groupFormations(){
+  for(var i = 0; i < gridMatrix.length; i++) { // 
+    for(var j = 0; j < gridMatrix[i].length; j++){ // 
+      if(gridMatrix[i][j].rock === true && gridMatrix[i][j].group === 0){
+        // If left is in group, copy
+        if(i > 0 && gridMatrix[i-1][j].rock === true && gridMatrix[i-1][j].group !== 0){
+          gridMatrix[i][j].group = gridMatrix[i-1][j].group
+          
+          // If above is of different group. Replace group of above with current.
+          if(j > 0 && gridMatrix[i][j-1].rock === true && gridMatrix[i][j-1].group !== gridMatrix[i][j].group){
+            replaceGroup(gridMatrix[i][j-1].group, gridMatrix[i][j].group);
+          }
+        }
+        // If above is in group, copy
+        else if(j > 0 && gridMatrix[i][j-1].rock === true && gridMatrix[i][j-1].group !== 0){
+          gridMatrix[i][j].group = gridMatrix[i][j-1].group
+        }
+        // else set new group
+        else {
+          gridMatrix[i][j].group = groupCounter++;
+        }
+        
+        
+      }
+    }
+  }
+}
+
+function markGroups() {
+  for(var i = 0; i < gridMatrix.length; i++) {
+    for(var j = 0; j < gridMatrix[i].length; j++){
+      if(gridMatrix[i][j].group !== 0){
+        drawText(i, j, gridMatrix[i][j].group, getColor(gridMatrix[i][j].group));
+      }
+    }
+  }
+}
+
+function replaceGroup(oldGroupId, newGroupId){
+  for(var i = 0; i < gridMatrix.length; i++) {
+    for(var j = 0; j < gridMatrix[i].length; j++){
+      if(gridMatrix[i][j].group === oldGroupId){
+        gridMatrix[i][j].group = newGroupId;
+      }
+    }
+  }
+}
+
+function drawSquare(x, y){
+  var box = new PIXI.Graphics();
+  box.beginFill(0xc0c0c0);
+  box.drawRect(x * boxSize, y * boxSize, boxSize, boxSize);
+  box.endFill();
+  stage.addChild(box)
+}
+
+function drawText(x, y, text, color){
+  var text = new PIXI.Text(text,{fontFamily : 'Arial', fontSize: 12, fill : color, align : 'center'});
+  text.position.x = x*boxSize + 4;
+  text.position.y = y*boxSize + 4;
+  stage.addChild(text)
+}
+
+function getColor(groupId) {
+  while(groupId >= colors.length){
+    groupId -= colors.length;
+  }
+  return colors[groupId];
+}
+
+function onKeyDown(key) {
+  if(key.keyCode === 82) { // R
+    initiate();
+  }
+}
+
+initiate();
+</script>
+</body>
+</html>
