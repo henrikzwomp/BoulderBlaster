@@ -1,282 +1,213 @@
 <!DOCTYPE html>
-<html><head>
-<meta http-equiv="content-type" content="text/html; charset=UTF-8"><meta name="viewport" content="width=device-width"><title>https://s.codepen.io/HenrikZwomp/debug/WLPqGY/LQkExKEZLvxA</title><link rel="stylesheet" type="text/css" href="resource://content-accessible/viewsource.css"></head><body id="viewsource" class="highlight" style="-moz-tab-size: 4" contextmenu="actions"><pre id="line1"><span>
-<span id="line2"></span></span><span class="doctype">&lt;!DOCTYPE html&gt;</span><span>
-<span id="line3"></span></span><span>&lt;<span class="start-tag">html</span> <span class="attribute-name">lang</span>="<a class="attribute-value">en</a>" &gt;</span><span>
-<span id="line4"></span>
-<span id="line5"></span></span><span>&lt;<span class="start-tag">head</span>&gt;</span><span>
-<span id="line6"></span>
-<span id="line7"></span>  </span><span>&lt;<span class="start-tag">meta</span> <span class="attribute-name">charset</span>="<a class="attribute-value">UTF-8</a>"&gt;</span><span>
-<span id="line8"></span>  </span><span>&lt;<span class="start-tag">link</span> <span class="attribute-name">rel</span>="<a class="attribute-value">shortcut icon</a>" <span class="attribute-name">type</span>="<a class="attribute-value">image/x-icon</a>" <span class="attribute-name">href</span>="<a class="attribute-value" href="view-source:https://static.codepen.io/assets/favicon/favicon-8ea04875e70c4b0bb41da869e81236e54394d63638a1ef12fa558a4a835f1164.ico">https://static.codepen.io/assets/favicon/favicon-8ea04875e70c4b0bb41da869e81236e54394d63638a1ef12fa558a4a835f1164.ico</a>" <span>/</span>&gt;</span><span>
-<span id="line9"></span>  </span><span>&lt;<span class="start-tag">link</span> <span class="attribute-name">rel</span>="<a class="attribute-value">mask-icon</a>" <span class="attribute-name">type</span>="<a class="attribute-value"></a>" <span class="attribute-name">href</span>="<a class="attribute-value" href="view-source:https://static.codepen.io/assets/favicon/logo-pin-f2d2b6d2c61838f7e76325261b7195c27224080bc099486ddd6dccb469b8e8e6.svg">https://static.codepen.io/assets/favicon/logo-pin-f2d2b6d2c61838f7e76325261b7195c27224080bc099486ddd6dccb469b8e8e6.svg</a>" <span class="attribute-name">color</span>="<a class="attribute-value">#111</a>" <span>/</span>&gt;</span><span>
-<span id="line10"></span>  </span><span>&lt;<span class="start-tag">title</span>&gt;</span><span>CodePen - Boulder Blaster - Test #1</span><span>&lt;/<span class="end-tag">title</span>&gt;</span><span>
-<span id="line11"></span>  
-<span id="line12"></span>  
-<span id="line13"></span>  
-<span id="line14"></span>  
-<span id="line15"></span>  
-<span id="line16"></span>  
-<span id="line17"></span>  
-<span id="line18"></span>  
-<span id="line19"></span>  
-<span id="line20"></span>
-<span id="line21"></span></span><span>&lt;/<span class="end-tag">head</span>&gt;</span><span>
-<span id="line22"></span>
-<span id="line23"></span></span><span>&lt;<span class="start-tag">body</span> <span class="attribute-name">translate</span>="<a class="attribute-value">no</a>" &gt;</span><span>
-<span id="line24"></span>
-<span id="line25"></span>  </span><span class="error error error error error error error error error error error comment" title="Consecutive hyphens did not terminate a comment. “--” is not permitted inside a comment, but e.g. “- -” is.
-Consecutive hyphens did not terminate a comment. “--” is not permitted inside a comment, but e.g. “- -” is.
-Consecutive hyphens did not terminate a comment. “--” is not permitted inside a comment, but e.g. “- -” is.
-Consecutive hyphens did not terminate a comment. “--” is not permitted inside a comment, but e.g. “- -” is.
-Consecutive hyphens did not terminate a comment. “--” is not permitted inside a comment, but e.g. “- -” is.
-Consecutive hyphens did not terminate a comment. “--” is not permitted inside a comment, but e.g. “- -” is.
-Consecutive hyphens did not terminate a comment. “--” is not permitted inside a comment, but e.g. “- -” is.
-Consecutive hyphens did not terminate a comment. “--” is not permitted inside a comment, but e.g. “- -” is.
-Consecutive hyphens did not terminate a comment. “--” is not permitted inside a comment, but e.g. “- -” is.
-Consecutive hyphens did not terminate a comment. “--” is not permitted inside a comment, but e.g. “- -” is.
-Consecutive hyphens did not terminate a comment. “--” is not permitted inside a comment, but e.g. “- -” is.">&lt;!--
-<span id="line26"></span>https://github.com/kittykatattack/learningPixi
-<span id="line27"></span>http://pixijs.download/release/docs/index.html
-<span id="line28"></span>
-<span id="line29"></span>Start
-<span id="line30"></span>- Placera spelare på rad 8, slumpmässig kolumn
-<span id="line31"></span>- Generera 3 fallande block-samlingar
-<span id="line32"></span>
-<span id="line33"></span>Spelare klickar på tangent, som leder till
-<span id="line34"></span>- Uppdateringar
-<span id="line35"></span>-- SpelarBoxen får nytt värde
-<span id="line36"></span>-- Alla fallande stenboxar får nya värden
-<span id="line37"></span>
-<span id="line38"></span>- Beräkna (ifall)
-<span id="line39"></span>-- Spelare träffats av sten
-<span id="line40"></span>-- Någon ny stenbox ska bli permanent.
-<span id="line41"></span>-- En full rad av stenar har skapats. (Alla stenar ovanför ska bli fallande)
-<span id="line42"></span>-- Vilket stenblock en missil kommer att träffa
-<span id="line43"></span>-- Om ny block-samling ska skapas 
-<span id="line44"></span>
-<span id="line45"></span>- Animera (i fall det behövs)
-<span id="line46"></span>-- Alla förflyttningar
-<span id="line47"></span>-- Spelars död.
-<span id="line48"></span>-- Sprängning av full rad.
-<span id="line49"></span>-- Missil och sprängning av stenblock
-<span id="line50"></span>--&gt;</span><span>
-<span id="line51"></span>  
-<span id="line52"></span>  </span><span>&lt;<span class="start-tag">script</span> <span class="attribute-name">src</span>='<a class="attribute-value" href="view-source:https://cdnjs.cloudflare.com/ajax/libs/pixi.js/4.5.1/pixi.min.js">https://cdnjs.cloudflare.com/ajax/libs/pixi.js/4.5.1/pixi.min.js</a>'&gt;</span><span></span><span>&lt;/<span class="end-tag">script</span>&gt;</span><span>
-<span id="line53"></span>
-<span id="line54"></span>  
-<span id="line55"></span>
-<span id="line56"></span>    </span><span>&lt;<span class="start-tag">script</span> &gt;</span><span>
-<span id="line57"></span>      // consts
-<span id="line58"></span>var application_size = 512;
-<span id="line59"></span>var boxSize = 32;
-<span id="line60"></span>var grid_squares = 16;
-<span id="line61"></span>var speed = 4; // boxSize must be divabable with this number
-<span id="line62"></span>var new_rock_every = 4;
-<span id="line63"></span>
-<span id="line64"></span>// variable
-<span id="line65"></span>var check_animation = false;
-<span id="line66"></span>var key_counter = 0; 
-<span id="line67"></span>var game_stage;
-<span id="line68"></span>var playerBox; 
-<span id="line69"></span>var stoneBoxes = [];
-<span id="line70"></span>var stoneBoxIdCount = 0;
-<span id="line71"></span>
-<span id="line72"></span>//Create a Pixi Application
-<span id="line73"></span>let app = new PIXI.Application({width: application_size, height: application_size});
-<span id="line74"></span>
-<span id="line75"></span>document.body.appendChild(app.view);
-<span id="line76"></span>
-<span id="line77"></span>initiateGameStage();
-<span id="line78"></span>
-<span id="line79"></span>app.ticker.add(delta =&gt; gameLoop(delta));
-<span id="line80"></span>
-<span id="line81"></span>// Add the 'keydown' event listener to our document
-<span id="line82"></span>document.addEventListener('keydown', onKeyDown);
-<span id="line83"></span>
-<span id="line84"></span>function onKeyDown(key) {
-<span id="line85"></span>  if(key.keyCode === 82) { // R
-<span id="line86"></span>    initiateGameStage();
-<span id="line87"></span>    return;
-<span id="line88"></span>  }
-<span id="line89"></span>  
-<span id="line90"></span>  if(check_animation)
-<span id="line91"></span>    return;
-<span id="line92"></span>  
-<span id="line93"></span>  check_animation = true;
-<span id="line94"></span>  key_counter++;
-<span id="line95"></span>  
-<span id="line96"></span>  if (key.keyCode === 87 || key.keyCode === 38) { // W Key is 87, Up arrow is 87
-<span id="line97"></span>    if (playerBox.gridY &gt; 0) playerBox.gridY--;
-<span id="line98"></span>  }
-<span id="line99"></span>  else if (key.keyCode === 83 || key.keyCode === 40) { // S Key is 83,  Down arrow is 40
-<span id="line100"></span>    if (playerBox.gridY != grid_squares - 1) playerBox.gridY++;
-<span id="line101"></span>  }
-<span id="line102"></span>  else if (key.keyCode === 65 || key.keyCode === 37) { // // A Key is 65,  Left arrow is 37
-<span id="line103"></span>    if (playerBox.gridX &gt; 0) playerBox.gridX--;
-<span id="line104"></span>  }
-<span id="line105"></span>  else if (key.keyCode === 68 || key.keyCode === 39) { // D Key is 68,  Right arrow is 39
-<span id="line106"></span>    if (playerBox.gridX != grid_squares - 1) playerBox.gridX++;
-<span id="line107"></span>  }
-<span id="line108"></span>  
-<span id="line109"></span>  // Move all falling rocks down
-<span id="line110"></span>  stoneBoxes.forEach( function(stoneBox)  {
-<span id="line111"></span>    if(stoneBox.gridY </span><span>&lt; </span><span>grid_squares - 1 &amp;&amp; stoneBox.isFalling)
-<span id="line112"></span>      stoneBox.gridY++;
-<span id="line113"></span>  });
-<span id="line114"></span>  
-<span id="line115"></span>  CalculateFallingStatusOnRocks();
-<span id="line116"></span>  
-<span id="line117"></span>  // Add new rock
-<span id="line118"></span>  if(key_counter &gt;= new_rock_every) {
-<span id="line119"></span>    GenerateStockFormation();
-<span id="line120"></span>    key_counter = 0;
-<span id="line121"></span>  }
-<span id="line122"></span>  
-<span id="line123"></span>  key.preventDefault();
-<span id="line124"></span>}
-<span id="line125"></span>
-<span id="line126"></span>function CalculateFallingStatusOnRocks() {
-<span id="line127"></span>  var grid_matrix = new Array(grid_squares);
-<span id="line128"></span>  for(var i = 0; i </span><span>&lt; </span><span>grid_matrix.length; i++) {
-<span id="line129"></span>    grid_matrix[i] = new Array(grid_squares); 
-<span id="line130"></span>  }
-<span id="line131"></span> 
-<span id="line132"></span>  stoneBoxes.forEach( function(stoneBox)  {
-<span id="line133"></span>    if(stoneBox.gridY &gt;= 0)
-<span id="line134"></span>      grid_matrix[stoneBox.gridY][stoneBox.gridX] = stoneBox;
-<span id="line135"></span>  });
-<span id="line136"></span>  
-<span id="line137"></span>  for(var row = grid_squares-1; row &gt;= 0; row--) { // From bottom to top
-<span id="line138"></span>      for(var column = 0; column </span><span>&lt; </span><span>grid_squares; column++) { // From left to right
-<span id="line139"></span>        if(grid_matrix[row][column] !== undefined){
-<span id="line140"></span>          var stone = grid_matrix[row][column];
-<span id="line141"></span>          
-<span id="line142"></span>          if(!stone.isFalling)
-<span id="line143"></span>            continue;
-<span id="line144"></span>          
-<span id="line145"></span>          if(row == grid_squares-1) // If last row, stopp falling
-<span id="line146"></span>            stone.isFalling = false;
-<span id="line147"></span>          else if(grid_matrix[row+1][column] !== undefined) { // If has rock below it.
-<span id="line148"></span>            if(grid_matrix[row+1][column].isFalling === false)
-<span id="line149"></span>              stone.isFalling = false;
-<span id="line150"></span>          }
-<span id="line151"></span>
-<span id="line152"></span>          if(!stone.isFalling) {
-<span id="line153"></span>            // Stop all stoneblocks that are in the same group.
-<span id="line154"></span>            stoneBoxes.filter(stoneBox3 =&gt; stoneBox3.groupId == stone.groupId)
-<span id="line155"></span>              .forEach( function(stoneBox2)  {
-<span id="line156"></span>                stoneBox2.isFalling = false;
-<span id="line157"></span>            });
-<span id="line158"></span>          }
-<span id="line159"></span>        }
-<span id="line160"></span>      }
-<span id="line161"></span>  }
-<span id="line162"></span>  
-<span id="line163"></span>}
-<span id="line164"></span>
-<span id="line165"></span>function gameLoop(delta) {
-<span id="line166"></span>  if (!check_animation)
-<span id="line167"></span>    return;
-<span id="line168"></span>  
-<span id="line169"></span>  var update_mades = 0;
-<span id="line170"></span>  
-<span id="line171"></span>  update_mades += updateBoxGraphicPosition(playerBox);
-<span id="line172"></span>  stoneBoxes.forEach( function(stoneBox) {update_mades += updateBoxGraphicPosition(stoneBox);});
-<span id="line173"></span>  
-<span id="line174"></span>  if(update_mades === 0)
-<span id="line175"></span>    check_animation = false;
-<span id="line176"></span>}
-<span id="line177"></span>
-<span id="line178"></span>function initiateGameStage() {
-<span id="line179"></span>  game_stage = new PIXI.Container();
-<span id="line180"></span>
-<span id="line181"></span>  playerBox = makeBox(Math.floor(Math.random() * grid_squares), 8, 0x3498db ); 
-<span id="line182"></span> 
-<span id="line183"></span>  stoneBoxes = [];
-<span id="line184"></span>  GenerateStockFormation(14);
-<span id="line185"></span>  GenerateStockFormation(10);
-<span id="line186"></span>  GenerateStockFormation(6);
-<span id="line187"></span>  GenerateStockFormation(2);
-<span id="line188"></span> 
-<span id="line189"></span>  app.stage = game_stage;
-<span id="line190"></span>}
-<span id="line191"></span>
-<span id="line192"></span>function makeBox(x, y, color, group_id = 0) {
-<span id="line193"></span>  var box = {gridX:x,gridY:y,graphic:new PIXI.Graphics(),isFalling:true,groupId:group_id };
-<span id="line194"></span>  box.graphic.beginFill(color);
-<span id="line195"></span>  box.graphic.drawRect(0, 0, boxSize, boxSize);
-<span id="line196"></span>  box.graphic.endFill();
-<span id="line197"></span>  box.graphic.position.x = x * boxSize;
-<span id="line198"></span>  box.graphic.position.y = y * boxSize;
-<span id="line199"></span>  game_stage.addChild(box.graphic)
-<span id="line200"></span>  return box;
-<span id="line201"></span>}
-<span id="line202"></span>
-<span id="line203"></span>function updateBoxGraphicPosition(box) {
-<span id="line204"></span>  var update_mades = 0;
-<span id="line205"></span>  
-<span id="line206"></span>  if(box.gridX * boxSize &gt; box.graphic.position.x)
-<span id="line207"></span>    { box.graphic.position.x += speed; update_mades++; }
-<span id="line208"></span>  else if (box.gridX * boxSize </span><span>&lt; </span><span>box.graphic.position.x)
-<span id="line209"></span>    { box.graphic.position.x -= speed; update_mades++; }
-<span id="line210"></span>  
-<span id="line211"></span>  if(box.gridY * boxSize &gt; box.graphic.position.y)
-<span id="line212"></span>    { box.graphic.position.y += speed; update_mades++; }
-<span id="line213"></span>  else if (box.gridY * boxSize </span><span>&lt; </span><span>box.graphic.position.y)
-<span id="line214"></span>    { box.graphic.position.y -= speed; update_mades++; }
-<span id="line215"></span>  
-<span id="line216"></span>  return update_mades;
-<span id="line217"></span>}
-<span id="line218"></span>
-<span id="line219"></span>function GenerateStockFormation(start_y = -2) {
-<span id="line220"></span>  var trigger = 0.8;
-<span id="line221"></span>  var top_made = false;
-<span id="line222"></span>  var left_made = false;
-<span id="line223"></span>  var right_made = false;
-<span id="line224"></span>  var bottom_made = false;
-<span id="line225"></span>  var start_x = Math.floor(Math.random() * grid_squares+1)-1;
-<span id="line226"></span>  stoneBoxIdCount++;
-<span id="line227"></span>  
-<span id="line228"></span>  stoneBoxes.push(makeBox(start_x, start_y, 0x808080, stoneBoxIdCount));
-<span id="line229"></span>
-<span id="line230"></span>  if(Math.random() &gt; trigger) {
-<span id="line231"></span>    stoneBoxes.push(makeBox(start_x, start_y-1, 0x808080, stoneBoxIdCount)); 
-<span id="line232"></span>    top_made = true; 
-<span id="line233"></span>  };
-<span id="line234"></span>  if(start_x-1 &gt;= 0 &amp;&amp; Math.random() &gt; trigger) {
-<span id="line235"></span>    stoneBoxes.push(makeBox(start_x-1, start_y, 0x808080, stoneBoxIdCount)); 
-<span id="line236"></span>    left_made = true; 
-<span id="line237"></span>  };
-<span id="line238"></span>  if(Math.random() &gt; trigger) {
-<span id="line239"></span>    stoneBoxes.push(makeBox(start_x+1, start_y, 0x808080, stoneBoxIdCount)); 
-<span id="line240"></span>    right_made = true;
-<span id="line241"></span>  };
-<span id="line242"></span>  
-<span id="line243"></span>  if(start_x-1 </span><span>&lt; </span><span>grid_squares &amp;&amp; Math.random() &gt; trigger) {
-<span id="line244"></span>    stoneBoxes.push(makeBox(start_x, start_y+1, 0x808080, stoneBoxIdCount)); 
-<span id="line245"></span>    bottom_made = true 
-<span id="line246"></span>  };
-<span id="line247"></span>  
-<span id="line248"></span>  if((top_made || left_made) &amp;&amp; start_x-1 &gt;= 0 &amp;&amp; Math.random() &gt; trigger) 
-<span id="line249"></span>    stoneBoxes.push(makeBox(start_x-1, start_y-1, 0x808080, stoneBoxIdCount));
-<span id="line250"></span>  if((top_made || right_made) &amp;&amp; start_x-1 </span><span>&lt; </span><span>grid_squares &amp;&amp; Math.random() &gt; trigger) 
-<span id="line251"></span>    stoneBoxes.push(makeBox(start_x+1, start_y-1, 0x808080, stoneBoxIdCount));
-<span id="line252"></span>  
-<span id="line253"></span>  if((bottom_made || left_made) &amp;&amp; start_x-1 &gt;= 0 &amp;&amp; Math.random() &gt; trigger) 
-<span id="line254"></span>    stoneBoxes.push(makeBox(start_x-1, start_y+1, 0x808080, stoneBoxIdCount));
-<span id="line255"></span>  if((bottom_made || right_made) &amp;&amp; start_x-1 </span><span>&lt; </span><span>grid_squares &amp;&amp; Math.random() &gt; trigger) 
-<span id="line256"></span>    stoneBoxes.push(makeBox(start_x+1, start_y+1, 0x808080, stoneBoxIdCount));
-<span id="line257"></span>}
-<span id="line258"></span>    </span><span>&lt;/<span class="end-tag">script</span>&gt;</span><span>
-<span id="line259"></span>
-<span id="line260"></span>
-<span id="line261"></span>
-<span id="line262"></span>  
-<span id="line263"></span>  
-<span id="line264"></span>
-<span id="line265"></span>  </span><span>&lt;<span class="start-tag">script</span> <span class="attribute-name">src</span>="<a class="attribute-value" href="view-source:https://static.codepen.io/assets/editor/live/css_reload-5619dc0905a68b2e6298901de54f73cefe4e079f65a75406858d92924b4938bf.js">https://static.codepen.io/assets/editor/live/css_reload-5619dc0905a68b2e6298901de54f73cefe4e079f65a75406858d92924b4938bf.js</a>"&gt;</span><span></span><span>&lt;/<span class="end-tag">script</span>&gt;</span><span>
-<span id="line266"></span></span><span>&lt;/<span class="end-tag">body</span>&gt;</span><span>
-<span id="line267"></span>
-<span id="line268"></span></span><span>&lt;/<span class="end-tag">html</span>&gt;</span><span>
-<span id="line269"></span> 
-<span id="line270"></span></span></pre><menu type="context" id="actions"><menuitem id="goToLine" label="Go to Line…" accesskey="L"></menuitem><menuitem id="wrapLongLines" label="Wrap Long Lines" type="checkbox"></menuitem><menuitem id="highlightSyntax" label="Syntax Highlighting" type="checkbox" checked="true"></menuitem></menu></body></html>
+<html lang="en" >
+<head>
+<meta charset="UTF-8">
+<title>Boulder Blaster - Test #1</title>
+</head>
+<body translate="no" >
+<script src='https://cdnjs.cloudflare.com/ajax/libs/pixi.js/4.5.1/pixi.min.js'></script>
+<script >
+// consts
+var application_size = 512;
+var boxSize = 32;
+var grid_squares = 16;
+var speed = 4; // boxSize must be divabable with this number
+var new_rock_every = 4;
+
+// variable
+var check_animation = false;
+var key_counter = 0; 
+var game_stage;
+var playerBox; 
+var stoneBoxes = [];
+var stoneBoxIdCount = 0;
+
+//Create a Pixi Application
+let app = new PIXI.Application({width: application_size, height: application_size});
+
+document.body.appendChild(app.view);
+
+initiateGameStage();
+
+app.ticker.add(delta => gameLoop(delta));
+
+// Add the 'keydown' event listener to our document
+document.addEventListener('keydown', onKeyDown);
+
+function onKeyDown(key) {
+  if(key.keyCode === 82) { // R
+    initiateGameStage();
+    return;
+  }
+  
+  if(check_animation)
+    return;
+  
+  check_animation = true;
+  key_counter++;
+  
+  if (key.keyCode === 87 || key.keyCode === 38) { // W Key is 87, Up arrow is 87
+    if (playerBox.gridY > 0) playerBox.gridY--;
+  }
+  else if (key.keyCode === 83 || key.keyCode === 40) { // S Key is 83,  Down arrow is 40
+    if (playerBox.gridY != grid_squares - 1) playerBox.gridY++;
+  }
+  else if (key.keyCode === 65 || key.keyCode === 37) { // // A Key is 65,  Left arrow is 37
+    if (playerBox.gridX > 0) playerBox.gridX--;
+  }
+  else if (key.keyCode === 68 || key.keyCode === 39) { // D Key is 68,  Right arrow is 39
+    if (playerBox.gridX != grid_squares - 1) playerBox.gridX++;
+  }
+  
+  // Move all falling rocks down
+  stoneBoxes.forEach( function(stoneBox)  {
+    if(stoneBox.gridY < grid_squares - 1 && stoneBox.isFalling)
+      stoneBox.gridY++;
+  });
+  
+  CalculateFallingStatusOnRocks();
+  
+  // Add new rock
+  if(key_counter >= new_rock_every) {
+    GenerateStockFormation();
+    key_counter = 0;
+  }
+  
+  key.preventDefault();
+}
+
+function CalculateFallingStatusOnRocks() {
+  var grid_matrix = new Array(grid_squares);
+  for(var i = 0; i < grid_matrix.length; i++) {
+    grid_matrix[i] = new Array(grid_squares); 
+  }
+ 
+  stoneBoxes.forEach( function(stoneBox)  {
+    if(stoneBox.gridY >= 0)
+      grid_matrix[stoneBox.gridY][stoneBox.gridX] = stoneBox;
+  });
+  
+  for(var row = grid_squares-1; row >= 0; row--) { // From bottom to top
+      for(var column = 0; column < grid_squares; column++) { // From left to right
+        if(grid_matrix[row][column] !== undefined){
+          var stone = grid_matrix[row][column];
+          
+          if(!stone.isFalling)
+            continue;
+          
+          if(row == grid_squares-1) // If last row, stopp falling
+            stone.isFalling = false;
+          else if(grid_matrix[row+1][column] !== undefined) { // If has rock below it.
+            if(grid_matrix[row+1][column].isFalling === false)
+              stone.isFalling = false;
+          }
+
+          if(!stone.isFalling) {
+            // Stop all stoneblocks that are in the same group.
+            stoneBoxes.filter(stoneBox3 => stoneBox3.groupId == stone.groupId)
+              .forEach( function(stoneBox2)  {
+                stoneBox2.isFalling = false;
+            });
+          }
+        }
+      }
+  }
+  
+}
+
+function gameLoop(delta) {
+  if (!check_animation)
+    return;
+  
+  var update_mades = 0;
+  
+  update_mades += updateBoxGraphicPosition(playerBox);
+  stoneBoxes.forEach( function(stoneBox) {update_mades += updateBoxGraphicPosition(stoneBox);});
+  
+  if(update_mades === 0)
+    check_animation = false;
+}
+
+function initiateGameStage() {
+  game_stage = new PIXI.Container();
+
+  playerBox = makeBox(Math.floor(Math.random() * grid_squares), 8, 0x3498db ); 
+ 
+  stoneBoxes = [];
+  GenerateStockFormation(14);
+  GenerateStockFormation(10);
+  GenerateStockFormation(6);
+  GenerateStockFormation(2);
+ 
+  app.stage = game_stage;
+}
+
+function makeBox(x, y, color, group_id = 0) {
+  var box = {gridX:x,gridY:y,graphic:new PIXI.Graphics(),isFalling:true,groupId:group_id };
+  box.graphic.beginFill(color);
+  box.graphic.drawRect(0, 0, boxSize, boxSize);
+  box.graphic.endFill();
+  box.graphic.position.x = x * boxSize;
+  box.graphic.position.y = y * boxSize;
+  game_stage.addChild(box.graphic)
+  return box;
+}
+
+function updateBoxGraphicPosition(box) {
+  var update_mades = 0;
+  
+  if(box.gridX * boxSize > box.graphic.position.x)
+    { box.graphic.position.x += speed; update_mades++; }
+  else if (box.gridX * boxSize < box.graphic.position.x)
+    { box.graphic.position.x -= speed; update_mades++; }
+  
+  if(box.gridY * boxSize > box.graphic.position.y)
+    { box.graphic.position.y += speed; update_mades++; }
+  else if (box.gridY * boxSize < box.graphic.position.y)
+    { box.graphic.position.y -= speed; update_mades++; }
+  
+  return update_mades;
+}
+
+function GenerateStockFormation(start_y = -2) {
+  var trigger = 0.8;
+  var top_made = false;
+  var left_made = false;
+  var right_made = false;
+  var bottom_made = false;
+  var start_x = Math.floor(Math.random() * grid_squares+1)-1;
+  stoneBoxIdCount++;
+  
+  stoneBoxes.push(makeBox(start_x, start_y, 0x808080, stoneBoxIdCount));
+
+  if(Math.random() > trigger) {
+    stoneBoxes.push(makeBox(start_x, start_y-1, 0x808080, stoneBoxIdCount)); 
+    top_made = true; 
+  };
+  if(start_x-1 >= 0 && Math.random() > trigger) {
+    stoneBoxes.push(makeBox(start_x-1, start_y, 0x808080, stoneBoxIdCount)); 
+    left_made = true; 
+  };
+  if(Math.random() > trigger) {
+    stoneBoxes.push(makeBox(start_x+1, start_y, 0x808080, stoneBoxIdCount)); 
+    right_made = true;
+  };
+  
+  if(start_x-1 < grid_squares && Math.random() > trigger) {
+    stoneBoxes.push(makeBox(start_x, start_y+1, 0x808080, stoneBoxIdCount)); 
+    bottom_made = true 
+  };
+  
+  if((top_made || left_made) && start_x-1 >= 0 && Math.random() > trigger) 
+    stoneBoxes.push(makeBox(start_x-1, start_y-1, 0x808080, stoneBoxIdCount));
+  if((top_made || right_made) && start_x-1 < grid_squares && Math.random() > trigger) 
+    stoneBoxes.push(makeBox(start_x+1, start_y-1, 0x808080, stoneBoxIdCount));
+  
+  if((bottom_made || left_made) && start_x-1 >= 0 && Math.random() > trigger) 
+    stoneBoxes.push(makeBox(start_x-1, start_y+1, 0x808080, stoneBoxIdCount));
+  if((bottom_made || right_made) && start_x-1 < grid_squares && Math.random() > trigger) 
+    stoneBoxes.push(makeBox(start_x+1, start_y+1, 0x808080, stoneBoxIdCount));
+}
+</script>
+</body>
+</html>
