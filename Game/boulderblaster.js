@@ -4,22 +4,17 @@ var gameSpecs = {
   gridSquares: 16,
   maxBlockSpeed: 4, 
   maxMissileSpeed: 10, 
-  boulderFrequency: 4
+  boulderFrequency: 4,
+  boulderColor: 0x808080,
 };
       
-//var new_rock_every = 4;
-
 // variable
 var gameStage;
 var boulderFormationIdCount = 0;
 var blocksToMove = false;
 var movesCounter = 0;
 
-var entities = {
-  playerBlock: undefined, 
-  boulderBlocks: [],
-  missiles: []
-};
+var entities = {};
 
 function onKeyDown(key) {
   if(key.keyCode === 82) { // R
@@ -60,7 +55,7 @@ function onKeyDown(key) {
   }
 
   moveAllFallingBouldersDown();
-  calculateFallingStatusOnRocks();
+  calculateFallingStatusOnBoulders();
 
   // Add new rock
   if(movesCounter >= gameSpecs.boulderFrequency) {
@@ -78,21 +73,29 @@ function gameLoop(delta) {
 
     if(changesMade === 0) blocksToMove = false;
   }
+  moveExplodingBlocks();
 
   moveMissiles();
   detectMissileHit();
 }
 
 function initiateGameStage() {
+  entities = {
+    playerBlock: undefined, 
+    boulderBlocks: [],
+    missiles: [], 
+    explodingBlocks: [], 
+  };
+
   gameStage = new PIXI.Container();
   app.stage = gameStage;
 
-  entities.playerBlock = createBlock(Math.floor(Math.random() * gameSpecs.gridSquares), 7, 0x3498db );
+  entities.playerBlock = createBlock(Math.floor(Math.random() * gameSpecs.gridSquares), 4, 0x3498db );
 
   generateBoulderFormation(14);
   generateBoulderFormation(10);
-  //GenerateBoulderFormation(6);
-  generateBoulderFormation(2);
+  generateBoulderFormation(6);
+  //generateBoulderFormation(2);
   generateBoulderFormation();
 }
 
@@ -125,35 +128,35 @@ function generateBoulderFormation(start_y = -2) {
   var start_x = Math.floor(Math.random() * gameSpecs.gridSquares+1)-1;
   boulderFormationIdCount++;
   
-  entities.boulderBlocks.push(createBlock(start_x, start_y, 0x808080, boulderFormationIdCount));
+  entities.boulderBlocks.push(createBlock(start_x, start_y, gameSpecs.boulderColor, boulderFormationIdCount));
 
   if(Math.random() > trigger) {
-    entities.boulderBlocks.push(createBlock(start_x, start_y-1, 0x808080, boulderFormationIdCount)); 
+    entities.boulderBlocks.push(createBlock(start_x, start_y-1, gameSpecs.boulderColor, boulderFormationIdCount)); 
     top_made = true; 
   };
   if(start_x-1 >= 0 && Math.random() > trigger) {
-    entities.boulderBlocks.push(createBlock(start_x-1, start_y, 0x808080, boulderFormationIdCount)); 
+    entities.boulderBlocks.push(createBlock(start_x-1, start_y, gameSpecs.boulderColor, boulderFormationIdCount)); 
     left_made = true; 
   };
   if(Math.random() > trigger) {
-    entities.boulderBlocks.push(createBlock(start_x+1, start_y, 0x808080, boulderFormationIdCount)); 
+    entities.boulderBlocks.push(createBlock(start_x+1, start_y, gameSpecs.boulderColor, boulderFormationIdCount)); 
     right_made = true;
   };
   
   if(start_x-1 < gameSpecs.gridSquares && Math.random() > trigger) {
-    entities.boulderBlocks.push(createBlock(start_x, start_y+1, 0x808080, boulderFormationIdCount)); 
+    entities.boulderBlocks.push(createBlock(start_x, start_y+1, gameSpecs.boulderColor, boulderFormationIdCount)); 
     bottom_made = true 
   };
   
   if((top_made || left_made) && start_x-1 >= 0 && Math.random() > trigger) 
-    entities.boulderBlocks.push(createBlock(start_x-1, start_y-1, 0x808080, boulderFormationIdCount));
+    entities.boulderBlocks.push(createBlock(start_x-1, start_y-1, gameSpecs.boulderColor, boulderFormationIdCount));
   if((top_made || right_made) && start_x-1 < gameSpecs.gridSquares && Math.random() > trigger) 
-    entities.boulderBlocks.push(createBlock(start_x+1, start_y-1, 0x808080, boulderFormationIdCount));
+    entities.boulderBlocks.push(createBlock(start_x+1, start_y-1, gameSpecs.boulderColor, boulderFormationIdCount));
   
   if((bottom_made || left_made) && start_x-1 >= 0 && Math.random() > trigger) 
-    entities.boulderBlocks.push(createBlock(start_x-1, start_y+1, 0x808080, boulderFormationIdCount));
+    entities.boulderBlocks.push(createBlock(start_x-1, start_y+1, gameSpecs.boulderColor, boulderFormationIdCount));
   if((bottom_made || right_made) && start_x-1 < gameSpecs.gridSquares && Math.random() > trigger) 
-    entities.boulderBlocks.push(createBlock(start_x+1, start_y+1, 0x808080, boulderFormationIdCount));
+    entities.boulderBlocks.push(createBlock(start_x+1, start_y+1, gameSpecs.boulderColor, boulderFormationIdCount));
 }
 
 function updateBlockGraphicPosition(block) {
@@ -184,7 +187,7 @@ function updateBlockGraphicPosition(block) {
   return update_mades;
 }
 
-function calculateFallingStatusOnRocks() {
+function calculateFallingStatusOnBoulders() {
   var gridMatrix = new Array(gameSpecs.gridSquares);
   for(var i = 0; i < gridMatrix.length; i++) {
     gridMatrix[i] = new Array(gameSpecs.gridSquares); 
@@ -285,15 +288,16 @@ function detectMissileHit() {
   for(i = removeBouldersIndexes.length-1; i > -1; i--){
     var toDestroy = entities.boulderBlocks[removeBouldersIndexes[i]];
     entities.boulderBlocks.splice(removeBouldersIndexes[i], 1);
+    
+    placeExplodingBlock(toDestroy.position.x, toDestroy.position.y, gameSpecs.boulderColor);
     gameStage.removeChild(toDestroy);
   }
 
   if(removeBouldersIndexes.length > 0){
     regroupBoulderFormation();
-    calculateFallingStatusOnRocks();
+    calculateFallingStatusOnBoulders();
   }
 }
-
 
 function regroupBoulderFormation(){
 
@@ -345,5 +349,60 @@ function replaceGroup(gridMatrix, oldGroupId, newGroupId){
         gridMatrix[i][j].groupId = newGroupId;
       }
     }
+  }
+}
+
+function placeExplodingBlock(x, y, color) {
+  var helper = { 
+    createBoxQuater: function(x, y, x_mod, y_mod, size_mod, color) { 
+      var box1 = new PIXI.Graphics();
+      box1.beginFill(color);
+      box1.drawRect(0, 0, gameSpecs.boxSize/size_mod, gameSpecs.boxSize/size_mod);
+      box1.endFill();
+      box1.position.x = x - ( x_mod > 0 ? 0 : (gameSpecs.boxSize/size_mod));
+      box1.position.y = y - ( y_mod > 0 ? 0 : (gameSpecs.boxSize/size_mod));
+      box1.vx = 1 / size_mod * x_mod;
+      box1.vy = 1 / size_mod * y_mod;
+      entities.explodingBlocks.push(box1);
+      console.log("ToDo");
+    }, 
+    createBoxQuaterSet: function(x, y, x_mod, y_mod, color) {
+      a = this.addRandomAngle(x_mod, y_mod);
+      this.createBoxQuater(x, y, a[0], a[1], 8, 0xff8000);
+      a = this.addRandomAngle(x_mod, y_mod);
+      this.createBoxQuater(x, y, a[0], a[1], 6, 0xff8000);
+      a = this.addRandomAngle(x_mod, y_mod);
+      this.createBoxQuater(x, y, a[0], a[1], 4, 0xff8000);
+      this.createBoxQuater(x, y, x_mod, y_mod, 2, color);
+    },
+    addRandomAngle: function(x, y) {
+      base_angle = 90;
+      random = (Math.random() * (Math.PI/180) * base_angle) - (Math.PI/180 * base_angle/2);
+      px = x * Math.cos(random) - y * Math.sin(random); 
+      py = x * Math.sin(random) + y * Math.cos(random);
+      return [px,py];
+    }
+  };
+
+  x += gameSpecs.boxSize/2;
+  y += gameSpecs.boxSize/2;
+
+  helper.createBoxQuaterSet(x, y, -1, -1, color);
+  helper.createBoxQuaterSet(x, y, 1, -1, color);
+  helper.createBoxQuaterSet(x, y, -1, 1, color);
+  helper.createBoxQuaterSet(x, y, 1, 1, color);
+  entities.explodingBlocks.forEach(function(item) {gameStage.addChild(item);} );
+}
+
+function moveExplodingBlocks(){
+  entities.explodingBlocks.forEach(function(item) {
+      item.x += item.vx*2;
+      item.y += item.vy*2;
+      item.alpha -= (Math.abs(item.vy) > Math.abs(item.vx) ? Math.abs(item.vy / 20) : Math.abs(item.vx / 20))*2;
+  });
+  
+  while(entities.explodingBlocks.length > 0 && entities.explodingBlocks[0].alpha < 0){
+    gameStage.removeChild(entities.explodingBlocks[0]);
+    entities.explodingBlocks.shift();
   }
 }
