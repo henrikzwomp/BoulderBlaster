@@ -9,20 +9,5 @@
 <body translate="no" >
 <script src='https://cdnjs.cloudflare.com/ajax/libs/pixi.js/4.5.1/pixi.min.js'></script>
 <script src='boulderblaster.js'></script>
-<script >
-var application_size = 512;
-
-let app = new PIXI.Application({width: application_size, height: application_size});
-
-document.body.appendChild(app.view);
-
-initiateGameStage();
-
-app.ticker.add(delta => gameLoop(delta));
-
-// Add the 'keydown' event listener to our document
-document.addEventListener('keydown', onKeyDown);
-
-</script>
 </body>
 </html>
