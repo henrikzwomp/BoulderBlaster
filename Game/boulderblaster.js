@@ -1,13 +1,24 @@
 /*
  * __ToDo__
- * When player moves into a boulder, the explosion should be moving in same direction
- * Don't explode player if blasting block directly above
- * Only regroup "shattered" boulder
- * Add missle trails
+ * --When player moves into a boulder, the explosion should be moving in same direction--
+ * --Don't explode player if blasting block directly above--
+ * --Only regroup "shattered" boulder--
+ * --Add missle trails--
+ * --Place missile (on z axis) below player block--
  * 
  * __Next__
  * Auto-explode a full line of boulders :)
  * Add background grid
+ * Make new boulder placement less random. Incresed chance of new boulder where there is already a lower amount of boulders.
+ * Some kind of intro in the beginning. 
+ * Add "bottom line" to stage
+ * Implement game over when boulds reach height limit
+ * Red blinking background when boulds reach near height limit
+ *
+ * __Test__
+ * Boulder logic - When boulder should start falling again
+ * Collisions
+ * Check that this always works: "Don't explode player if blasting block directly above"
 */
 
 var boulderBlaster = (function(){
@@ -22,6 +33,7 @@ var boulderBlaster = (function(){
     boulderFrequency: 4,
     boulderColor: 0x808080,
     playerColor: 0x3498db, 
+    missileColor: 0xee0000,
   };
         
   // variable
@@ -45,6 +57,8 @@ var boulderBlaster = (function(){
     if (entities.playerBlock == undefined)
       return;
   
+    entities.playerBlock.lastGridXMove = 0;
+  
     if (keyMovesPlayerBlock(key.keyCode) || keyFiresMissle(key.keyCode)) {
       blocksToMove = true;
       movesCounter++;
@@ -52,7 +66,8 @@ var boulderBlaster = (function(){
   
       moveAllFallingBouldersDown();
       calculateFallingStatusOnBoulders();
-        checkPlayerBoulderCollision();
+      detectMissileHit(); // A new missile needs to hit adjecten block immediently 
+      checkPlayerBoulderCollision();
   
       // Add new rock
       if (movesCounter >= gameSpecs.boulderFrequency) {
@@ -67,12 +82,14 @@ var boulderBlaster = (function(){
     if (keyCode === 65 || keyCode === 37) { // A Key is 65,  Left arrow is 37
       if (entities.playerBlock.gridX > 0) {
           entities.playerBlock.gridX--;
+          entities.playerBlock.lastGridXMove = -1;
           return true;
       }
     }
     else if (keyCode === 68 || keyCode === 39) { // D Key is 68,  Right arrow is 39
       if (entities.playerBlock.gridX != gameSpecs.gridSquares - 1) {
           entities.playerBlock.gridX++;
+          entities.playerBlock.lastGridXMove = 1;
           return true;
       }
     }
@@ -110,6 +127,7 @@ var boulderBlaster = (function(){
       boulderBlocks: [],
       missiles: [], 
       explodingBlocks: [], 
+      flames: [], 
     };
   
     gameStage = new PIXI.Container();
@@ -216,8 +234,10 @@ var boulderBlaster = (function(){
     }
    
     entities.boulderBlocks.forEach( function(stoneBlock)  {
-      if(stoneBlock.gridY >= 0)
+      if(stoneBlock.gridY >= 0) {
         gridMatrix[stoneBlock.gridY][stoneBlock.gridX] = stoneBlock;
+        stoneBlock.isFalling = true;
+      }
     });
     
     for(var row = gameSpecs.gridSquares-1; row >= 0; row--) { // From bottom to top
@@ -256,19 +276,37 @@ var boulderBlaster = (function(){
   
   var createMissile = function(gridXPos, gridYPos, direction) {
     var missile = new PIXI.Graphics();
-    missile.beginFill(0xee0000);
+    missile.beginFill(gameSpecs.missileColor);
     missile.drawRect(0, 0, gameSpecs.boxSize / 4, gameSpecs.boxSize / 2);
     missile.endFill();
     missile.position.x = (gridXPos * gameSpecs.boxSize) + (gameSpecs.boxSize / 2) - (gameSpecs.boxSize / 8);
-    missile.position.y = (gridYPos * gameSpecs.boxSize) + (gameSpecs.boxSize / 2) - (gameSpecs.boxSize / 4);
+    
+    if(direction === -1)
+      missile.position.y = (gridYPos * gameSpecs.boxSize) - 1;
+    else
+      missile.position.y = (gridYPos * gameSpecs.boxSize) + gameSpecs.boxSize + 1;
+    
     missile.direction = direction;
     missile.gridX = gridXPos;
     entities.missiles.push(missile);
     gameStage.addChild(missile);
+    gameStage.setChildIndex(missile, 0);
   };
   
   var moveMissiles = function() {
+    var addFlame = function(x,y,direction) {
+        var flame = new PIXI.Graphics();
+        flame.beginFill(gameSpecs.missileColor);
+        flame.drawRect(0, 0, gameSpecs.boxSize / 4, gameSpecs.boxSize / 4);
+        flame.endFill();
+        flame.position.x = x;
+        flame.position.y = y; // ToDo Fix
+        entities.flames.push(flame);
+        gameStage.addChild(flame);
+      };
+   
     entities.missiles.forEach(function(missile) {
+      addFlame(missile.position.x, missile.position.y, missile.direction);
       missile.position.y += gameSpecs.maxMissileSpeed * missile.direction;
     });
   
@@ -277,8 +315,17 @@ var boulderBlaster = (function(){
       entities.missiles[0].destroy();
       entities.missiles.shift();
     }
+    
+    entities.flames.forEach(function(item) {
+        item.alpha -= 0.1;
+    });
+    
+    while(entities.flames.length > 0 && entities.flames[0].alpha < 0){
+      gameStage.removeChild(entities.flames[0]);
+      entities.flames.shift();
+    }
   };
-  
+    
   var detectMissileHit = function() {
     var removeMissilesIndexes = [];
     var removeBouldersIndexes = [];
@@ -309,18 +356,17 @@ var boulderBlaster = (function(){
     for(i = removeBouldersIndexes.length-1; i > -1; i--){
       var toDestroy = entities.boulderBlocks[removeBouldersIndexes[i]];
       entities.boulderBlocks.splice(removeBouldersIndexes[i], 1);
-      
       placeExplodingBlock(toDestroy.position.x, toDestroy.position.y, gameSpecs.boulderColor);
+      regroupBoulderFormation(toDestroy.groupId);
       gameStage.removeChild(toDestroy);
     }
   
     if(removeBouldersIndexes.length > 0){
-      regroupBoulderFormation();
       calculateFallingStatusOnBoulders();
     }
   };
   
-  var regroupBoulderFormation = function(){
+  var regroupBoulderFormation = function(groupId){
     var replaceGroup = function(gridMatrix, oldGroupId, newGroupId){
       for(var i = 0; i < gridMatrix.length; i++) {
         for(var j = 0; j < gridMatrix[i].length; j++){
@@ -337,7 +383,7 @@ var boulderBlaster = (function(){
     }
    
     entities.boulderBlocks.forEach( function(stoneBlock)  {
-      if(stoneBlock.gridY >= 0) {
+      if(stoneBlock.groupId === groupId && stoneBlock.gridY >= 0) {
         stoneBlock.isFalling = true;
         stoneBlock.groupId = 0;
         gridMatrix[stoneBlock.gridY][stoneBlock.gridX] = stoneBlock;
@@ -370,7 +416,7 @@ var boulderBlaster = (function(){
     }
   };
     
-  var placeExplodingBlock = function(x, y, color) {
+  var placeExplodingBlock = function(x, y, color, addXMove = 0) {
     var helper = { 
       createBoxQuater: function(x, y, x_mod, y_mod, size_mod, color) { 
         var box1 = new PIXI.Graphics();
@@ -381,8 +427,9 @@ var boulderBlaster = (function(){
         box1.position.y = y - ( y_mod > 0 ? 0 : (gameSpecs.boxSize/size_mod));
         box1.vx = 1 / size_mod * x_mod;
         box1.vy = 1 / size_mod * y_mod;
+        box1.va = (Math.abs(box1.vy) > Math.abs(box1.vx) ? Math.abs(box1.vy / 20) : Math.abs(box1.vx / 20))*2;
+        box1.vx += addXMove;
         entities.explodingBlocks.push(box1);
-        console.log("ToDo");
       }, 
       createBoxQuaterSet: function(x, y, x_mod, y_mod, color) {
         a = this.addRandomAngle(x_mod, y_mod);
@@ -416,7 +463,8 @@ var boulderBlaster = (function(){
     entities.explodingBlocks.forEach(function(item) {
         item.x += item.vx*2;
         item.y += item.vy*2;
-        item.alpha -= (Math.abs(item.vy) > Math.abs(item.vx) ? Math.abs(item.vy / 20) : Math.abs(item.vx / 20))*2;
+        //item.alpha -= (Math.abs(item.vy) > Math.abs(item.vx) ? Math.abs(item.vy / 20) : Math.abs(item.vx / 20))*2;
+        item.alpha -= item.va;
     });
     
     while(entities.explodingBlocks.length > 0 && entities.explodingBlocks[0].alpha < 0){
@@ -431,8 +479,8 @@ var boulderBlaster = (function(){
       for (i = 0; i < entities.boulderBlocks.length; i++) {
           if (entities.boulderBlocks[i].gridX === entities.playerBlock.gridX &&
               entities.boulderBlocks[i].gridY === entities.playerBlock.gridY) {
-  
-              placeExplodingBlock(entities.playerBlock.position.x, entities.playerBlock.position.y, gameSpecs.playerColor)
+              placeExplodingBlock(entities.playerBlock.position.x, entities.playerBlock.position.y
+                , gameSpecs.playerColor, entities.playerBlock.lastGridXMove * 0.5); 
               gameStage.removeChild(entities.playerBlock);
               entities.playerBlock = undefined;
               break;
