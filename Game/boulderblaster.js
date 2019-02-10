@@ -295,26 +295,26 @@ var boulderBlaster = (function(){
   var blocksToMove = false;
   var movesCounter = 0;
   
-  var entities = {};
+  var playerBlock = undefined;
   var missileHandler = undefined;
+  var bbCollection = undefined;
+  var explodingBlocks = [];
   
   var initiateGameStage = function() {
     gameStage = new PIXI.Container();
     app.stage = gameStage;
 
-    entities = {
-      playerBlock: new PlayerEntity(gameStage), 
-      boulderBlocks: new BoulderCollectionEntity(gameStage), 
-      explodingBlocks: [], 
-    };
-
+    
+    playerBlock = new PlayerEntity(gameStage);
+    bbCollection = new BoulderCollectionEntity(gameStage);
+    explodingBlocks = [];
     missileHandler = new MissileHandler(gameStage, application_size);
 
-    entities.boulderBlocks.generateBoulderFormation(14);
-    entities.boulderBlocks.generateBoulderFormation(10);
-    entities.boulderBlocks.generateBoulderFormation(6);
-    entities.boulderBlocks.generateBoulderFormation();
-    entities.boulderBlocks.calculateFallingStatusOnBoulders();
+    bbCollection.generateBoulderFormation(14);
+    bbCollection.generateBoulderFormation(10);
+    bbCollection.generateBoulderFormation(6);
+    bbCollection.generateBoulderFormation();
+    bbCollection.calculateFallingStatusOnBoulders();
   };
 
   var onKeyDown = function (key) {
@@ -327,24 +327,24 @@ var boulderBlaster = (function(){
     if(blocksToMove) // Wait for blocks to stop moving, before allowing next move.
       return;
   
-    if (entities.playerBlock == undefined)
+    if (playerBlock == undefined)
       return;
   
-    entities.playerBlock.lastGridXMove = 0;
+    playerBlock.lastGridXMove = 0;
   
     if (keyMovesPlayerBlock(key.keyCode) || keyFiresMissle(key.keyCode)) {
       blocksToMove = true;
       movesCounter++;
       key.preventDefault();
   
-      entities.boulderBlocks.moveAllFallingBouldersDown();
-      entities.boulderBlocks.calculateFallingStatusOnBoulders();
+      bbCollection.moveAllFallingBouldersDown();
+      bbCollection.calculateFallingStatusOnBoulders();
       detectMissileHit(); // A new missile needs to hit adjecten block immediently 
       checkPlayerBoulderCollision();
   
       // Add new rock
       if (movesCounter >= gameSpecs.boulderFrequency) {
-        entities.boulderBlocks.generateBoulderFormation();
+        bbCollection.generateBoulderFormation();
           movesCounter = 0;
       }
     }
@@ -353,16 +353,16 @@ var boulderBlaster = (function(){
   
   var keyMovesPlayerBlock = function(keyCode) {
     if (keyCode === 65 || keyCode === 37) { // A Key is 65,  Left arrow is 37
-      if (entities.playerBlock.gridX > 0) {
-          entities.playerBlock.gridX--;
-          entities.playerBlock.lastGridXMove = -1;
+      if (playerBlock.gridX > 0) {
+          playerBlock.gridX--;
+          playerBlock.lastGridXMove = -1;
           return true;
       }
     }
     else if (keyCode === 68 || keyCode === 39) { // D Key is 68,  Right arrow is 39
-      if (entities.playerBlock.gridX != gameSpecs.gridSquares - 1) {
-          entities.playerBlock.gridX++;
-          entities.playerBlock.lastGridXMove = 1;
+      if (playerBlock.gridX != gameSpecs.gridSquares - 1) {
+          playerBlock.gridX++;
+          playerBlock.lastGridXMove = 1;
           return true;
       }
     }
@@ -370,11 +370,11 @@ var boulderBlaster = (function(){
   
   var keyFiresMissle = function (keyCode) {
     if (keyCode === 87 || keyCode === 38) { // W Key is 87, Up arrow is 87
-      missileHandler.createMissile(entities.playerBlock.gridX, entities.playerBlock.gridY, -1);
+      missileHandler.createMissile(playerBlock.gridX, playerBlock.gridY, -1);
       return true;
     }
     else if (keyCode === 83 || keyCode === 40) { // S Key is 83,  Down arrow is 40
-      missileHandler.createMissile(entities.playerBlock.gridX, entities.playerBlock.gridY, 1);
+      missileHandler.createMissile(playerBlock.gridX, playerBlock.gridY, 1);
       return true;
     }
   };
@@ -383,8 +383,8 @@ var boulderBlaster = (function(){
     var changesMade = 0;
   
     if(blocksToMove) {
-      if (entities.playerBlock) changesMade =+ entities.playerBlock.updateBlockGraphicPosition();
-      entities.boulderBlocks.boulderBlocks.forEach( function(stoneBlock) {changesMade += stoneBlock.updateBlockGraphicPosition();});
+      if (playerBlock) changesMade =+ playerBlock.updateBlockGraphicPosition();
+      bbCollection.boulderBlocks.forEach( function(stoneBlock) {changesMade += stoneBlock.updateBlockGraphicPosition();});
   
       if(changesMade === 0) blocksToMove = false;
     }
@@ -399,7 +399,7 @@ var boulderBlaster = (function(){
     var removeBouldersIndexes = [];
   
     var m = missileHandler.missiles;
-    var b = entities.boulderBlocks.boulderBlocks;
+    var b = bbCollection.boulderBlocks;
   
     for(let i = 0; i < m.length; i++) {
         for(let j = 0; j < b.length; j++) {
@@ -422,15 +422,15 @@ var boulderBlaster = (function(){
     }
   
     for(let i = removeBouldersIndexes.length-1; i > -1; i--){
-      var toDestroy = entities.boulderBlocks.boulderBlocks[removeBouldersIndexes[i]];
-      entities.boulderBlocks.boulderBlocks.splice(removeBouldersIndexes[i], 1);
+      var toDestroy = bbCollection.boulderBlocks[removeBouldersIndexes[i]];
+      bbCollection.boulderBlocks.splice(removeBouldersIndexes[i], 1);
       placeExplodingBlock(toDestroy.graphic.position.x, toDestroy.graphic.position.y, gameSpecs.boulderColor);
-      entities.boulderBlocks.regroupBoulderFormation(toDestroy.groupId);
+      bbCollection.regroupBoulderFormation(toDestroy.groupId);
       gameStage.removeChild(toDestroy.graphic);
     }
   
     if(removeBouldersIndexes.length > 0){
-      entities.boulderBlocks.calculateFallingStatusOnBoulders(); // ToDo: Move call to regroupBoulderFormation function?
+      bbCollection.calculateFallingStatusOnBoulders(); // ToDo: Move call to regroupBoulderFormation function?
     }
   };
       
@@ -447,7 +447,7 @@ var boulderBlaster = (function(){
         box1.vy = 1 / size_mod * y_mod;
         box1.va = (Math.abs(box1.vy) > Math.abs(box1.vx) ? Math.abs(box1.vy / 20) : Math.abs(box1.vx / 20))*2;
         box1.vx += addXMove;
-        entities.explodingBlocks.push(box1);
+        explodingBlocks.push(box1);
       }, 
       createBoxQuaterSet: function(x, y, x_mod, y_mod, color) {
         let a = this.addRandomAngle(x_mod, y_mod);
@@ -474,33 +474,33 @@ var boulderBlaster = (function(){
     helper.createBoxQuaterSet(x, y, 1, -1, color);
     helper.createBoxQuaterSet(x, y, -1, 1, color);
     helper.createBoxQuaterSet(x, y, 1, 1, color);
-    entities.explodingBlocks.forEach(function(item) {gameStage.addChild(item);} );
+    explodingBlocks.forEach(function(item) {gameStage.addChild(item);} );
   };
   
   var moveExplodingBlocks = function(){
-    entities.explodingBlocks.forEach(function(item) {
+    explodingBlocks.forEach(function(item) {
         item.x += item.vx*2;
         item.y += item.vy*2;
         //item.alpha -= (Math.abs(item.vy) > Math.abs(item.vx) ? Math.abs(item.vy / 20) : Math.abs(item.vx / 20))*2;
         item.alpha -= item.va;
     });
     
-    while(entities.explodingBlocks.length > 0 && entities.explodingBlocks[0].alpha < 0){
-      gameStage.removeChild(entities.explodingBlocks[0]);
-      entities.explodingBlocks.shift();
+    while(explodingBlocks.length > 0 && explodingBlocks[0].alpha < 0){
+      gameStage.removeChild(explodingBlocks[0]);
+      explodingBlocks.shift();
     }
   }
   
   var checkPlayerBoulderCollision = function() {
-    var b = entities.boulderBlocks.boulderBlocks;
+    var b = bbCollection.boulderBlocks;
   
     for (let i = 0; i < b.length; i++) {
-        if (b[i].gridX === entities.playerBlock.gridX &&
-          b[i].gridY === entities.playerBlock.gridY) {
-            placeExplodingBlock(entities.playerBlock.graphic.position.x, entities.playerBlock.graphic.position.y
-              , gameSpecs.playerColor, entities.playerBlock.lastGridXMove * 0.5); 
-            gameStage.removeChild(entities.playerBlock.graphic);
-            entities.playerBlock = undefined;
+        if (b[i].gridX === playerBlock.gridX &&
+          b[i].gridY === playerBlock.gridY) {
+            placeExplodingBlock(playerBlock.graphic.position.x, playerBlock.graphic.position.y
+              , gameSpecs.playerColor, playerBlock.lastGridXMove * 0.5); 
+            gameStage.removeChild(playerBlock.graphic);
+            playerBlock = undefined;
             break;
         }
     }
