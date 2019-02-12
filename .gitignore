@@ -1,0 +1,7 @@
+# Ignoring local copies of frameworks
+*/lib/jasmine*
+*/pixi.js.map
+*/pixi.min.js
+
+# Junk file
+*/index.html.dontcommit
