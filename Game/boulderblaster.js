@@ -15,14 +15,15 @@
 */
 "use strict";
 
-var boulderBlaster = (function(){
-  function bbBase() {
+var BoulderBlaster = {
+  bbBase: function(stage) {
     this.gridSquares = 16;
     this.boxSize = 32;
-  }
+    this.gameStage = stage;
+  },
 
-  function BlockEntity(stage, x, y, color, group_id = 0) {
-    bbBase.call(this);
+  BlockEntity: function(stage, x, y, color, group_id = 0) {
+    BoulderBlaster.bbBase.call(this, stage);
     this.maxBlockSpeed = 4;
 
     this.graphic = new PIXI.Graphics()
@@ -37,7 +38,7 @@ var boulderBlaster = (function(){
     this.isFalling = true;
     this.groupId = group_id;
 
-    stage.addChild(this.graphic);
+    this.gameStage.addChild(this.graphic);
 
     this.updateBlockGraphicPosition = function() {
       var update_mades = 0;
@@ -66,27 +67,26 @@ var boulderBlaster = (function(){
     
       return update_mades;
     };
-  }
+  }, 
 
-  function PlayerEntity(stage) {
+  PlayerEntity: function(stage) {
     this.playerColor = 0x3498db;
 
-    bbBase.call(this);
-    BlockEntity.call(this, stage, 
+    BoulderBlaster.bbBase.call(this, stage);
+    BoulderBlaster.BlockEntity.call(this, stage, 
       Math.floor(Math.random() * this.gridSquares), 4, 
       this.playerColor);
 
     this.lastGridXMove = 0;
-  }
+  },
 
-  function BoulderEntity(stage, x, y, group_id) {
+  BoulderEntity: function (stage, x, y, group_id) {
     this.boulderColor = 0x808080;
-    BlockEntity.call(this, stage, x, y, this.boulderColor, group_id);
-  }
+    BoulderBlaster.BlockEntity.call(this, stage, x, y, this.boulderColor, group_id);
+  }, 
 
-  function BoulderCollection(stage) {
-    bbBase.call(this);
-    this.gameStage = stage;
+  BoulderCollection: function(stage) {
+    BoulderBlaster.bbBase.call(this, stage);
     this.boulderBlocks = [];
     this.boulderFormationIdCount = 0;
 
@@ -99,35 +99,35 @@ var boulderBlaster = (function(){
       var start_x = Math.floor(Math.random() * this.gridSquares+1)-1;
       this.boulderFormationIdCount++;
       
-      this.boulderBlocks.push(new BoulderEntity(this.gameStage, start_x, start_y, this.boulderFormationIdCount));
+      this.boulderBlocks.push(new BoulderBlaster.BoulderEntity(this.gameStage, start_x, start_y, this.boulderFormationIdCount));
     
       if(Math.random() > trigger) {
-        this.boulderBlocks.push(new BoulderEntity(this.gameStage, start_x, start_y-1, this.boulderFormationIdCount)); 
+        this.boulderBlocks.push(new BoulderBlaster.BoulderEntity(this.gameStage, start_x, start_y-1, this.boulderFormationIdCount)); 
         top_made = true; 
       };
       if(start_x-1 >= 0 && Math.random() > trigger) {
-        this.boulderBlocks.push(new BoulderEntity(this.gameStage, start_x-1, start_y, this.boulderFormationIdCount)); 
+        this.boulderBlocks.push(new BoulderBlaster.BoulderEntity(this.gameStage, start_x-1, start_y, this.boulderFormationIdCount)); 
         left_made = true; 
       };
       if(Math.random() > trigger) {
-        this.boulderBlocks.push(new BoulderEntity(this.gameStage, start_x+1, start_y, this.boulderFormationIdCount)); 
+        this.boulderBlocks.push(new BoulderBlaster.BoulderEntity(this.gameStage, start_x+1, start_y, this.boulderFormationIdCount)); 
         right_made = true;
       };
       
       if(start_x-1 < this.gridSquares && Math.random() > trigger) {
-        this.boulderBlocks.push(new BoulderEntity(this.gameStage, start_x, start_y+1, this.boulderFormationIdCount)); 
+        this.boulderBlocks.push(new BoulderBlaster.BoulderEntity(this.gameStage, start_x, start_y+1, this.boulderFormationIdCount)); 
         bottom_made = true 
       };
       
       if((top_made || left_made) && start_x-1 >= 0 && Math.random() > trigger) 
-        this.boulderBlocks.push(new BoulderEntity(this.gameStage, start_x-1, start_y-1, this.boulderFormationIdCount));
+        this.boulderBlocks.push(new BoulderBlaster.BoulderEntity(this.gameStage, start_x-1, start_y-1, this.boulderFormationIdCount));
       if((top_made || right_made) && start_x-1 < this.gridSquares && Math.random() > trigger) 
-        this.boulderBlocks.push(new BoulderEntity(this.gameStage, start_x+1, start_y-1, this.boulderFormationIdCount));
+        this.boulderBlocks.push(new BoulderBlaster.BoulderEntity(this.gameStage, start_x+1, start_y-1, this.boulderFormationIdCount));
       
       if((bottom_made || left_made) && start_x-1 >= 0 && Math.random() > trigger) 
-        this.boulderBlocks.push(new BoulderEntity(this.gameStage, start_x-1, start_y+1, this.boulderFormationIdCount));
+        this.boulderBlocks.push(new BoulderBlaster.BoulderEntity(this.gameStage, start_x-1, start_y+1, this.boulderFormationIdCount));
       if((bottom_made || right_made) && start_x-1 < this.gridSquares && Math.random() > trigger) 
-        this.boulderBlocks.push(new BoulderEntity(this.gameStage, start_x+1, start_y+1, this.boulderFormationIdCount));
+        this.boulderBlocks.push(new BoulderBlaster.BoulderEntity(this.gameStage, start_x+1, start_y+1, this.boulderFormationIdCount));
     };
 
     this.calculateFallingStatusOnBoulders = function() {
@@ -227,14 +227,13 @@ var boulderBlaster = (function(){
         }
       }
     };
-  }
+  }, 
 
-  function MissileHandler(stage, appSize) {
-    bbBase.call(this);
+  MissileHandler: function(stage, appSize) {
+    BoulderBlaster.bbBase.call(this, stage);
     this.maxMissileSpeed = 10;
     this.missileColor = 0xee0000;
 
-    this.gameStage = stage;
     this.missiles = [];
     this.flames = [];
     this.applicationSize = appSize;
@@ -290,11 +289,10 @@ var boulderBlaster = (function(){
       this.flames.push(flame);
       this.gameStage.addChild(flame);
     };
-  }
+  }, 
 
-  function CollisionChecker(stage, exploHandler) {
-    bbBase.call(this);
-    this.gameStage = stage;
+  CollisionChecker: function (stage, exploHandler) {
+    BoulderBlaster.bbBase.call(this, stage);
     this.explosionHandler = exploHandler;
     
     this.detectMissileHit = function(missileHandler, bbCollection) {
@@ -351,11 +349,10 @@ var boulderBlaster = (function(){
       }
       return false;
     };
-  }
+  }, 
 
-  function ExplosionHandler(stage) {
-    bbBase.call(this);
-    this.gameStage = stage;
+  ExplosionHandler: function(stage) {
+    BoulderBlaster.bbBase.call(this, stage);
     this.explodingBlocks = [];
     
     this.placeExplodingBlock = function(x, y, color, addXMove = 0) {
@@ -413,8 +410,9 @@ var boulderBlaster = (function(){
       let py = x * Math.sin(random) + y * Math.cos(random);
       return [px,py];
     };
-  }
+  }, 
   
+  Game: function() {
   var application_size = 512;
   var boulderFrequency = 4;
   
@@ -436,11 +434,11 @@ var boulderBlaster = (function(){
     app.stage = gameStage;
 
     
-    playerBlock = new PlayerEntity(gameStage);
-    bbCollection = new BoulderCollection(gameStage);
-    missileHandler = new MissileHandler(gameStage, application_size);
-    explosionHandler = new ExplosionHandler(gameStage);
-    collisionChecker = new CollisionChecker(gameStage, explosionHandler);
+    playerBlock = new BoulderBlaster.PlayerEntity(gameStage);
+    bbCollection = new BoulderBlaster.BoulderCollection(gameStage);
+    missileHandler = new BoulderBlaster.MissileHandler(gameStage, application_size);
+    explosionHandler = new BoulderBlaster.ExplosionHandler(gameStage);
+    collisionChecker = new BoulderBlaster.CollisionChecker(gameStage, explosionHandler);
 
     bbCollection.generateBoulderFormation(14);
     bbCollection.generateBoulderFormation(10);
@@ -527,17 +525,12 @@ var boulderBlaster = (function(){
     collisionChecker.detectMissileHit(missileHandler, bbCollection);
   };
 
-  return {
-    initiate: function(document) {
+  this.initiate = function(document) {
       document.body.appendChild(app.view);
       initiateGameStage();
       app.ticker.add(delta => gameLoop(delta));
       document.addEventListener('keydown', onKeyDown);
-    }
-
   };
-})();
 
-
-
-boulderBlaster.initiate(document);
+  },
+};
