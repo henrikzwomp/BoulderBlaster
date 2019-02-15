@@ -1,4 +1,6 @@
-describe("BlockEntity suite", function () {
+"use strict";
+
+describe("BlockEntity.constructor", function () {
 	it("Can construct a BlockEntity", function() {
 		let stage = new PIXI.Container();
 		let x = 2;
@@ -23,7 +25,9 @@ describe("BlockEntity suite", function () {
 		expect(block.graphic.position.x).toBe(x * block.boxSize);
     expect(block.graphic.position.y).toBe(y * block.boxSize);
 	});
-	
+});
+
+describe("BlockEntity.updateBlockGraphicPosition", function () {
 	it("Can move a BlockEntity", function() {
 		var block = new BoulderBlaster.BlockEntity(new PIXI.Container(), 2, 2, 0xff00ff, 10);
 		block.gridX = 3;
@@ -31,11 +35,11 @@ describe("BlockEntity suite", function () {
 		block.maxBlockSpeed = 400;
 		
 		expect(block.graphic.position.x).toBe(2 * block.boxSize);
-    expect(block.graphic.position.y).toBe(2 * block.boxSize);
+    	expect(block.graphic.position.y).toBe(2 * block.boxSize);
 		
 		block.updateBlockGraphicPosition();
 		
 		expect(block.graphic.position.x).toBe(3 * block.boxSize);
-    expect(block.graphic.position.y).toBe(3 * block.boxSize);
+    	expect(block.graphic.position.y).toBe(3 * block.boxSize);
 	});
 });
