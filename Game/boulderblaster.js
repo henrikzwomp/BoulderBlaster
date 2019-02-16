@@ -7,11 +7,6 @@
  * Add "bottom line" to stage
  * Implement game over when boulds reach height limit
  * Red blinking background when boulds reach near height limit
- *
- * __Test__
- * Boulder logic - When boulder should start falling again
- * Collisions
- * Check that this always works: "Don't explode player if blasting block directly above"
 */
 "use strict";
 
@@ -77,7 +72,6 @@ var BoulderBlaster = {
 
     this.lastGridXMove = 0;
     
-    // ToDo Test
     this.placePlayer = function() {
     	if(this.graphic)
     		this.graphic.destroy();
@@ -86,13 +80,11 @@ var BoulderBlaster = {
       this.playerColor);
       this.isStaged = true;
     }
-    
-    // ToDo Test
+
     this.removePlayer = function() {
     	this.graphic.destroy();
     	delete this.graphic;
     	this.isStaged = false;
-
     }
   },
 
@@ -244,7 +236,6 @@ var BoulderBlaster = {
       }
     };
     
-    // ToDo Test
     this.clearBoulders = function() {
     	this.boulderBlocks.forEach(function(block) { block.graphic.destroy(); });
     	this.boulderBlocks = [];

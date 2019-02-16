@@ -7,7 +7,7 @@ describe("BoulderCollection.generateBoulderFormation", function () {
 			stage = new PIXI.Container();
   	});
 	
-	it("Can Generate a Boulder Formation", function() {
+	it("Can Generate a Boulder Formation.", function() {
 		let bc = new BoulderBlaster.BoulderCollection(stage);
 		
 		expect(bc.boulderBlocks.length).toBe(0);
@@ -25,7 +25,7 @@ describe("BoulderCollection.calculateFallingStatusOnBoulders", function () {
 			stage = new PIXI.Container();
   	});
 
-	it("Can Calculate Falling Status On Boulders", function() {
+	it("Can Calculate Falling Status On Boulders.", function() {
 		let bc = new BoulderBlaster.BoulderCollection(stage);
 		bc.gridSquares = 3;
 
@@ -55,7 +55,7 @@ describe("BoulderCollection.moveAllFallingBouldersDown", function () {
 			stage = new PIXI.Container();
 	  });
 	  
-	it("Can Move only falling Boulders Down", function() {
+	it("Can Move only falling Boulders Down.", function() {
 		let bc = new BoulderBlaster.BoulderCollection(stage);
 		bc.gridSquares = 3;
 
@@ -112,5 +112,30 @@ describe("BoulderCollection.regroupBoulderFormation", function () {
 		expect(boulder11.groupId).toBe(boulder12.groupId);
 		expect(boulder21.groupId).toBe(boulder22.groupId);
 
+	});
+});
+
+describe("BoulderCollection.clearBoulders", function () {
+	let stage;
+	
+	beforeEach(function () {
+			stage = new PIXI.Container();
+  	});
+	
+	it("Can clear Boulders (including graphics).", function() {
+		let bc = new BoulderBlaster.BoulderCollection(stage);
+		
+		expect(bc.boulderBlocks.length).toBe(0);
+		expect(stage.children.length).toBe(0);
+		
+		bc.generateBoulderFormation();
+		
+		expect(bc.boulderBlocks.length).not.toBe(0);
+		expect(stage.children.length).not.toBe(0);
+
+		bc.clearBoulders();
+
+		expect(bc.boulderBlocks.length).toBe(0);
+		expect(stage.children.length).toBe(0);
 	});
 });
