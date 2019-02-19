@@ -1,6 +1,6 @@
 "use strict";
 
-describe("CollisionChecker.detectMissileHit", function () {
+describe("CollisionHandler.detectMissileHit", function () {
 	let stage;
 	let eh;
 	let missileMock;
@@ -27,102 +27,103 @@ describe("CollisionChecker.detectMissileHit", function () {
     	boulderMock.graphic.endFill();
 			
 			mhMock = { missiles: [missileMock] };
-			bbcMock = { boulderBlocks: [boulderMock], regroupBoulderFormation : function(groupId) {}, calculateFallingStatusOnBoulders: function() {} };
+			bbcMock = new BoulderBlaster.BoulderCollection(stage); //  { boulderBlocks: [boulderMock], regroupBoulderFormation : function(groupId) {}, calculateFallingStatusOnBoulders: function() {} };
+			bbcMock.boulderBlocks = [boulderMock];
   });
 	
 	it("Can detect missile/boulder hit when Y positions are the same.", function() {
-		let bc = new BoulderBlaster.CollisionChecker(stage, eh);
+		let ch = new BoulderBlaster.CollisionHandler(stage, eh);
 		
 		expect(mhMock.missiles.length).toBe(1);
 		expect(bbcMock.boulderBlocks.length).toBe(1);
 		
-		bc.detectMissileHit(mhMock, bbcMock);
+		ch.detectMissileHit(mhMock, bbcMock);
 
 		expect(mhMock.missiles.length).toBe(0);
 		expect(bbcMock.boulderBlocks.length).toBe(0);
 	});
 	
 	it("Will filter on gridX property.", function() {
-		let bc = new BoulderBlaster.CollisionChecker(stage, eh);
+		let ch = new BoulderBlaster.CollisionHandler(stage, eh);
 		
 		missileMock.gridX = 1;
 	
 		expect(mhMock.missiles.length).toBe(1);
 		expect(bbcMock.boulderBlocks.length).toBe(1);
 		
-		bc.detectMissileHit(mhMock, bbcMock);
+		ch.detectMissileHit(mhMock, bbcMock);
 		
 		expect(mhMock.missiles.length).toBe(1);
 		expect(bbcMock.boulderBlocks.length).toBe(1);
 		
 		missileMock.gridX = 0;
 		
-		bc.detectMissileHit(mhMock, bbcMock);
+		ch.detectMissileHit(mhMock, bbcMock);
 		
 		expect(mhMock.missiles.length).toBe(0);
 		expect(bbcMock.boulderBlocks.length).toBe(0);
 	});
 	
 	it("Can detect missile/boulder hit when graphics are overlapping. (Missile from above)", function() {
-		let bc = new BoulderBlaster.CollisionChecker(stage, eh);
+		let ch = new BoulderBlaster.CollisionHandler(stage, eh);
 		
 		boulderMock.graphic.position.y = 8;
 
 		expect(mhMock.missiles.length).toBe(1);
 		expect(bbcMock.boulderBlocks.length).toBe(1);
 		
-		bc.detectMissileHit(mhMock, bbcMock);
+		ch.detectMissileHit(mhMock, bbcMock);
 
 		expect(mhMock.missiles.length).toBe(0);
 		expect(bbcMock.boulderBlocks.length).toBe(0);
 	});
 	
 	it("Can detect missile/boulder hit when graphics are overlapping. (Missile from below)", function() {
-		let bc = new BoulderBlaster.CollisionChecker(stage, eh);
+		let ch = new BoulderBlaster.CollisionHandler(stage, eh);
 		
 		missileMock.position.y = 8;
 	
 		expect(mhMock.missiles.length).toBe(1);
 		expect(bbcMock.boulderBlocks.length).toBe(1);
 		
-		bc.detectMissileHit(mhMock, bbcMock);
+		ch.detectMissileHit(mhMock, bbcMock);
 
 		expect(mhMock.missiles.length).toBe(0);
 		expect(bbcMock.boulderBlocks.length).toBe(0);
 	});
 	
 	it("Will call regroupBoulderFormation when hit detected.", function() {
-		let bc = new BoulderBlaster.CollisionChecker(stage, eh);
+		let ch = new BoulderBlaster.CollisionHandler(stage, eh);
 		
 		spyOn(bbcMock, 'regroupBoulderFormation');
 		
-		bc.detectMissileHit(mhMock, bbcMock);
+		ch.detectMissileHit(mhMock, bbcMock);
 
 		expect(bbcMock.regroupBoulderFormation).toHaveBeenCalled();
 	});
 	
 	it("Will call calculateFallingStatusOnBoulders when hit detected.", function() {
-		let bc = new BoulderBlaster.CollisionChecker(stage, eh);
+		let ch = new BoulderBlaster.CollisionHandler(stage, eh);
 	
 		spyOn(bbcMock, 'calculateFallingStatusOnBoulders');
 		
-		bc.detectMissileHit(mhMock, bbcMock);
+		ch.detectMissileHit(mhMock, bbcMock);
 
 		expect(bbcMock.calculateFallingStatusOnBoulders).toHaveBeenCalled();
 	});
 	
 		it("Will call placeExplodingBlock when hit detected.", function() {
-		let bc = new BoulderBlaster.CollisionChecker(stage, eh);
+		let ch = new BoulderBlaster.CollisionHandler(stage, eh);
 	
 		spyOn(eh, 'placeExplodingBlock');
 		
-		bc.detectMissileHit(mhMock, bbcMock);
+		ch.detectMissileHit(mhMock, bbcMock);
 
 		expect(eh.placeExplodingBlock).toHaveBeenCalled();
 	});
 });
 
-describe("CollisionChecker.checkPlayerBoulderCollision", function () {
+describe("CollisionHandler.checkPlayerBoulderCollision", function () {
 	let stage;
 	let eh;
 	let playerMock;
@@ -139,25 +140,25 @@ describe("CollisionChecker.checkPlayerBoulderCollision", function () {
   });
   
   it("Will return true when player and boulder is in same grid square.", function() {
-		let bc = new BoulderBlaster.CollisionChecker(stage, eh);
+		let ch = new BoulderBlaster.CollisionHandler(stage, eh);
 		
-		let result = bc.checkPlayerBoulderCollision(playerMock, bbcMock);
+		let result = ch.checkPlayerBoulderCollision(playerMock, bbcMock);
 		
 		expect(result).toBe(true);
 		
 	});
   
   it("Will return false when player and boulder is not in same grid square.", function() {
-		let bc = new BoulderBlaster.CollisionChecker(stage, eh);
+		let ch = new BoulderBlaster.CollisionHandler(stage, eh);
 		
 		playerMock.gridX = 1;
-		let result1 = bc.checkPlayerBoulderCollision(playerMock, bbcMock);
+		let result1 = ch.checkPlayerBoulderCollision(playerMock, bbcMock);
 		
 		expect(result1).toBe(false);
 		
 		playerMock.gridX = 0;
 		playerMock.gridY = 1;
-		let result2 = bc.checkPlayerBoulderCollision(playerMock, bbcMock);
+		let result2 = ch.checkPlayerBoulderCollision(playerMock, bbcMock);
 		
 		expect(result2).toBe(false);
 	});
@@ -166,7 +167,7 @@ describe("CollisionChecker.checkPlayerBoulderCollision", function () {
 	it("Will remvoe player block from stage.", function() {
 		eh.placeExplodingBlock = function(x,y,z) {};
 		
-		let bc = new BoulderBlaster.CollisionChecker(stage, eh);
+		let bc = new BoulderBlaster.CollisionHandler(stage, eh);
 		
 		expect(stage.children.length).toBe(1);
 		
@@ -178,9 +179,9 @@ describe("CollisionChecker.checkPlayerBoulderCollision", function () {
 	it("Will call placeExplodingBlock.", function() {
 		spyOn(eh, 'placeExplodingBlock');
 		
-		let bc = new BoulderBlaster.CollisionChecker(stage, eh);
+		let ch = new BoulderBlaster.CollisionHandler(stage, eh);
 
-		let result = bc.checkPlayerBoulderCollision(playerMock, bbcMock);
+		let result = ch.checkPlayerBoulderCollision(playerMock, bbcMock);
 		
 		expect(eh.placeExplodingBlock).toHaveBeenCalled();
 	});

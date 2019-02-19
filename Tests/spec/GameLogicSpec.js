@@ -6,7 +6,7 @@ describe("GameLogic.startGame", function () {
 	let playerBlock;
     let missileHandler;
     let bbCollection;
-    let collisionChecker;
+    let collisionHandler;
     let explosionHandler;
 
 	beforeEach(function () {
@@ -16,13 +16,14 @@ describe("GameLogic.startGame", function () {
 		explosionHandler = new BoulderBlaster.ExplosionHandler(gameStage);
 		playerBlock = new BoulderBlaster.PlayerEntity(gameStage);
         missileHandler = new BoulderBlaster.MissileHandler(gameStage, size);
-        bbCollection = new BoulderBlaster.BoulderCollection(gameStage);
-        collisionChecker = new BoulderBlaster.CollisionChecker(gameStage, explosionHandler);
+		bbCollection = new BoulderBlaster.BoulderCollection(gameStage);
+		//console.log(BoulderBlaster);
+        collisionHandler = new BoulderBlaster.CollisionHandler(gameStage, explosionHandler);
 	});
 	
 	it("Will Start the game as expected.", function() {
 		let logic = new BoulderBlaster.GameLogic(app, size, playerBlock, missileHandler, 
-			bbCollection, collisionChecker, explosionHandler);
+			bbCollection, collisionHandler, explosionHandler);
 
 		spyOn(playerBlock, "placePlayer");
 		spyOn(bbCollection, "clearBoulders");
@@ -44,7 +45,7 @@ describe("GameLogic.onKeyDown", function () {
 	let playerBlock;
     let missileHandler;
     let bbCollection;
-    let collisionChecker;
+    let collisionHandler;
     let explosionHandler;
 
 	beforeEach(function () {
@@ -55,7 +56,7 @@ describe("GameLogic.onKeyDown", function () {
 		playerBlock = new BoulderBlaster.PlayerEntity(gameStage);
         missileHandler = new BoulderBlaster.MissileHandler(gameStage, size);
         bbCollection = new BoulderBlaster.BoulderCollection(gameStage);
-        collisionChecker = new BoulderBlaster.CollisionChecker(gameStage, explosionHandler);
+        collisionHandler = new BoulderBlaster.CollisionHandler(gameStage, explosionHandler);
 	});
 	
 	it("Can restart game.", function() {
@@ -63,7 +64,7 @@ describe("GameLogic.onKeyDown", function () {
 		let key = {keyCode: 82, preventDefault: function() {}};
 
 		let logic = new BoulderBlaster.GameLogic(app, size, playerBlock, missileHandler, 
-			bbCollection, collisionChecker, explosionHandler);
+			bbCollection, collisionHandler, explosionHandler);
 
 		spyOn(playerBlock, "placePlayer");
 		spyOn(bbCollection, "clearBoulders");
@@ -82,7 +83,7 @@ describe("GameLogic.onKeyDown", function () {
 		let key = {keyCode: 65, preventDefault: function() {}}; // A 
 
 		let logic = new BoulderBlaster.GameLogic(app, size, playerBlock, missileHandler, 
-			bbCollection, collisionChecker, explosionHandler);
+			bbCollection, collisionHandler, explosionHandler);
 
 		playerBlock.gridX = 1;
 		playerBlock.lastGridXMove = 0;
@@ -105,7 +106,7 @@ describe("GameLogic.onKeyDown", function () {
 		let key = {keyCode: 65, preventDefault: function() {}}; // A 
 
 		let logic = new BoulderBlaster.GameLogic(app, size, playerBlock, missileHandler, 
-			bbCollection, collisionChecker, explosionHandler);
+			bbCollection, collisionHandler, explosionHandler);
 
 		playerBlock.placePlayer();
 		playerBlock.gridX = 1;
@@ -128,7 +129,7 @@ describe("GameLogic.onKeyDown", function () {
 		let key = {keyCode: 68, preventDefault: function() {}}; // A 
 
 		let logic = new BoulderBlaster.GameLogic(app, size, playerBlock, missileHandler, 
-			bbCollection, collisionChecker, explosionHandler);
+			bbCollection, collisionHandler, explosionHandler);
 
 		playerBlock.placePlayer();
 		playerBlock.gridX = playerBlock.gridSquares-2;
@@ -151,7 +152,7 @@ describe("GameLogic.onKeyDown", function () {
 		let key = {keyCode: 68, preventDefault: function() {}}; // D 
 
 		let logic = new BoulderBlaster.GameLogic(app, size, playerBlock, missileHandler, 
-			bbCollection, collisionChecker, explosionHandler);
+			bbCollection, collisionHandler, explosionHandler);
 
 		playerBlock.placePlayer();
 		playerBlock.gridX = 0;
@@ -170,7 +171,7 @@ describe("GameLogic.onKeyDown", function () {
 		let key = {keyCode: 87, preventDefault: function() {}}; // W
 
 		let logic = new BoulderBlaster.GameLogic(app, size, playerBlock, missileHandler, 
-			bbCollection, collisionChecker, explosionHandler);
+			bbCollection, collisionHandler, explosionHandler);
 
 		playerBlock.placePlayer();
 		
@@ -186,7 +187,7 @@ describe("GameLogic.onKeyDown", function () {
 		let key = {keyCode: 83, preventDefault: function() {}}; // S
 
 		let logic = new BoulderBlaster.GameLogic(app, size, playerBlock, missileHandler, 
-			bbCollection, collisionChecker, explosionHandler);
+			bbCollection, collisionHandler, explosionHandler);
 
 		playerBlock.placePlayer();
 		
@@ -202,28 +203,28 @@ describe("GameLogic.onKeyDown", function () {
 		let key = {keyCode: 83, preventDefault: function() {}}; // S
 
 		let logic = new BoulderBlaster.GameLogic(app, size, playerBlock, missileHandler, 
-			bbCollection, collisionChecker, explosionHandler);
+			bbCollection, collisionHandler, explosionHandler);
 
 		playerBlock.placePlayer();
 		
 		spyOn(bbCollection, "moveAllFallingBouldersDown");
 		spyOn(bbCollection, "calculateFallingStatusOnBoulders");
-		spyOn(collisionChecker, "detectMissileHit");
-		spyOn(collisionChecker, "checkPlayerBoulderCollision");
+		spyOn(collisionHandler, "detectMissileHit");
+		spyOn(collisionHandler, "checkPlayerBoulderCollision");
 
 		logic.onKeyDown(key);
 
 		expect(bbCollection.moveAllFallingBouldersDown).toHaveBeenCalled();
 		expect(bbCollection.calculateFallingStatusOnBoulders).toHaveBeenCalled();
-		expect(collisionChecker.detectMissileHit).toHaveBeenCalled();
-		expect(collisionChecker.checkPlayerBoulderCollision).toHaveBeenCalled();
+		expect(collisionHandler.detectMissileHit).toHaveBeenCalled();
+		expect(collisionHandler.checkPlayerBoulderCollision).toHaveBeenCalled();
 	});
 
 	it("Will generate new Boulders as player moves.", function() {
 		let key = {keyCode: 83, preventDefault: function() {}}; // A 
 
 		let logic = new BoulderBlaster.GameLogic(app, size, playerBlock, missileHandler, 
-			bbCollection, collisionChecker, explosionHandler);
+			bbCollection, collisionHandler, explosionHandler);
 
 		playerBlock.placePlayer();
 		
@@ -238,27 +239,56 @@ describe("GameLogic.onKeyDown", function () {
 
 		expect(bbCollection.generateBoulderFormation).toHaveBeenCalled();
 	});
+});
 
+describe("GameLogic.gameLoop", function () {
+	let size = 512;
+	let app = new PIXI.Application({width: size, height: size});
+	let playerBlock;
+    let missileHandler;
+    let bbCollection;
+    let collisionHandler;
+    let explosionHandler;
+
+	beforeEach(function () {
+		let gameStage = new PIXI.Container();
+      	app.stage = gameStage;
+
+		explosionHandler = new BoulderBlaster.ExplosionHandler(gameStage);
+		playerBlock = new BoulderBlaster.PlayerEntity(gameStage);
+        missileHandler = new BoulderBlaster.MissileHandler(gameStage, size);
+        bbCollection = new BoulderBlaster.BoulderCollection(gameStage);
+        collisionHandler = new BoulderBlaster.CollisionHandler(gameStage, explosionHandler);
+	});
+	
+	afterEach(function () {
+		playerBlock = undefined;
+    missileHandler = undefined;
+    bbCollection = undefined;
+    collisionHandler = undefined;
+    explosionHandler = undefined;
+	}) 
+	
 	it("Will move explosions & missiles and detect missile hits.", function() {
 		let logic = new BoulderBlaster.GameLogic(app, size, playerBlock, missileHandler, 
-			bbCollection, collisionChecker, explosionHandler);
+			bbCollection, collisionHandler, explosionHandler);
 
 		playerBlock.placePlayer();
 		
 		spyOn(explosionHandler, "moveExplodingBlocks");
 		spyOn(missileHandler, "moveMissiles");
-		spyOn(collisionChecker, "detectMissileHit");
+		spyOn(collisionHandler, "detectMissileHit");
 
 		logic.gameLoop(0);
 
 		expect(explosionHandler.moveExplodingBlocks).toHaveBeenCalled();
 		expect(missileHandler.moveMissiles).toHaveBeenCalled();
-		expect(collisionChecker.detectMissileHit).toHaveBeenCalled();
+		expect(collisionHandler.detectMissileHit).toHaveBeenCalled();
 	});
 
 	it("Will update block positions if needed.", function() {
 		let logic = new BoulderBlaster.GameLogic(app, size, playerBlock, missileHandler, 
-			bbCollection, collisionChecker, explosionHandler);
+			bbCollection, collisionHandler, explosionHandler);
 
 		let key = {keyCode: 65, preventDefault: function() {}}; // A 
 
@@ -273,5 +303,35 @@ describe("GameLogic.onKeyDown", function () {
 
 		expect(playerBlock.updateBlockGraphicPosition).toHaveBeenCalled();
 		expect(bbCollection.boulderBlocks[0].updateBlockGraphicPosition).toHaveBeenCalled();
+	});
+
+	it("Can explode bottom row if complete.", function() {
+		let logic = new BoulderBlaster.GameLogic(app, size, playerBlock, missileHandler, 
+			bbCollection, collisionHandler, explosionHandler);
+
+		let key = {keyCode: 65, preventDefault: function() {}}; // A 
+
+		playerBlock.placePlayer();
+		bbCollection.gridSquares = 3;
+		bbCollection.boulderBlocks.push(new BoulderBlaster.BoulderEntity(app.stage, 0, 2, 2));
+		bbCollection.boulderBlocks[0].isFalling = false;
+		bbCollection.boulderBlocks.push(new BoulderBlaster.BoulderEntity(app.stage, 1, 2, 2));
+		bbCollection.boulderBlocks[1].isFalling = false;
+		bbCollection.boulderBlocks.push(new BoulderBlaster.BoulderEntity(app.stage, 2, 2, 2));
+		bbCollection.boulderBlocks[2].isFalling = false;
+		
+		spyOn(bbCollection, "clearBottomRowIfComplete").and.callThrough();
+		spyOn(explosionHandler, "placeExplodingBlock").and.callThrough();
+
+		logic.onKeyDown(key);
+
+		expect(bbCollection.clearBottomRowIfComplete).not.toHaveBeenCalled();
+
+		for(let i = 0; i < 20; i++)
+			logic.gameLoop(0);
+
+		expect(bbCollection.clearBottomRowIfComplete).toHaveBeenCalled();
+		expect(explosionHandler.placeExplodingBlock).toHaveBeenCalled();
+		
 	});
 });

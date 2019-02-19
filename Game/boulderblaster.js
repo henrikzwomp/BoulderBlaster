@@ -2,7 +2,7 @@
  * __Next__
  * Auto-explode a full line of boulders :)
  * Add background grid
- * Make new boulder placement less random. Incresed chance of new boulder where there is already a lower amount of boulders.
+ --* Make new boulder placement less random. Incresed chance of new boulder where there is already a lower amount of boulders.--
  * Some kind of intro in the beginning. 
  * Add "bottom line" to stage
  * Implement game over when boulds reach height limit
@@ -99,42 +99,60 @@ var BoulderBlaster = {
     this.boulderFormationIdCount = 0;
 
     this.generateBoulderFormation = function(start_y = -2) {
-      var trigger = 0.8;
+      var trigger = 0.7;
       var top_made = false;
       var left_made = false;
       var right_made = false;
       var bottom_made = false;
-      var start_x = Math.floor(Math.random() * this.gridSquares+1)-1;
+      
+      // ToDo break out to own function
+      var start_x = 0;
+      var propShares = this.getColumnProbabilityShares();
+      var propSum = 0;
+      var randomValue = Math.random();
+      
+      for(let i = 0; i < propShares.length; i++) {
+      	propSum += propShares[i];
+      	if(randomValue < propSum) {
+      		start_x = i;
+      		break;
+      	}
+    	}
+      
+      //var start_x = Math.floor(Math.random() * this.gridSquares+1)-1;
       this.boulderFormationIdCount++;
       
       this.boulderBlocks.push(new BoulderBlaster.BoulderEntity(this.gameStage, start_x, start_y, this.boulderFormationIdCount));
     
+    	// Top?
       if(Math.random() > trigger) {
         this.boulderBlocks.push(new BoulderBlaster.BoulderEntity(this.gameStage, start_x, start_y-1, this.boulderFormationIdCount)); 
         top_made = true; 
       };
-      if(start_x-1 >= 0 && Math.random() > trigger) {
+      // Left
+      if((start_x-1) >= 0 && Math.random() > trigger) {
         this.boulderBlocks.push(new BoulderBlaster.BoulderEntity(this.gameStage, start_x-1, start_y, this.boulderFormationIdCount)); 
         left_made = true; 
       };
-      if(Math.random() > trigger) {
+      // Right
+      if((start_x+1) < this.gridSquares && Math.random() > trigger) {
         this.boulderBlocks.push(new BoulderBlaster.BoulderEntity(this.gameStage, start_x+1, start_y, this.boulderFormationIdCount)); 
         right_made = true;
       };
-      
-      if(start_x-1 < this.gridSquares && Math.random() > trigger) {
+      // Bottom
+      if(Math.random() > trigger) {
         this.boulderBlocks.push(new BoulderBlaster.BoulderEntity(this.gameStage, start_x, start_y+1, this.boulderFormationIdCount)); 
         bottom_made = true 
       };
       
-      if((top_made || left_made) && start_x-1 >= 0 && Math.random() > trigger) 
+      if((top_made || left_made) && (start_x-1) >= 0 && Math.random() > trigger) 
         this.boulderBlocks.push(new BoulderBlaster.BoulderEntity(this.gameStage, start_x-1, start_y-1, this.boulderFormationIdCount));
-      if((top_made || right_made) && start_x-1 < this.gridSquares && Math.random() > trigger) 
+      if((top_made || right_made) && (start_x+1) < this.gridSquares && Math.random() > trigger) 
         this.boulderBlocks.push(new BoulderBlaster.BoulderEntity(this.gameStage, start_x+1, start_y-1, this.boulderFormationIdCount));
       
-      if((bottom_made || left_made) && start_x-1 >= 0 && Math.random() > trigger) 
+      if((bottom_made || left_made) && (start_x-1) >= 0 && Math.random() > trigger) 
         this.boulderBlocks.push(new BoulderBlaster.BoulderEntity(this.gameStage, start_x-1, start_y+1, this.boulderFormationIdCount));
-      if((bottom_made || right_made) && start_x-1 < this.gridSquares && Math.random() > trigger) 
+      if((bottom_made || right_made) && (start_x+1) < this.gridSquares && Math.random() > trigger) 
         this.boulderBlocks.push(new BoulderBlaster.BoulderEntity(this.gameStage, start_x+1, start_y+1, this.boulderFormationIdCount));
     };
 
@@ -240,6 +258,66 @@ var BoulderBlaster = {
     	this.boulderBlocks.forEach(function(block) { block.graphic.destroy(); });
     	this.boulderBlocks = [];
     };
+
+    this.removeBoulder = function(index) {
+      this.boulderBlocks[index].graphic.destroy();
+      this.gameStage.removeChild(this.boulderBlocks[index].graphic);
+      this.boulderBlocks.splice(index, 1);
+    }
+
+    this.clearBottomRowIfComplete = function(explosionHandler) {
+        let bottomBouldersIndexes = [];
+
+        for(let i = 0; i < this.boulderBlocks.length; i++){
+          if(this.boulderBlocks[i].isFalling === false && this.boulderBlocks[i].gridY === this.gridSquares - 1 )
+            bottomBouldersIndexes.push(i);
+        }
+
+        if(bottomBouldersIndexes.length < this.gridSquares ) // ToDo test
+          return;
+
+        for(let i = bottomBouldersIndexes.length-1; i > -1; i--){
+          var toDestroy = this.boulderBlocks[bottomBouldersIndexes[i]];
+          explosionHandler.placeExplodingBlock(toDestroy.graphic.position.x, toDestroy.graphic.position.y, toDestroy.boulderColor);
+          this.removeBoulder(bottomBouldersIndexes[i]);
+        }
+    };
+    
+    this.getColumnProbabilityShares = function() {
+    	/*
+    	Better placement 
+				Parse through boulders
+					Sum number of boulder in each column (ColumnCount)
+					Save biggest column count (MaxCount)
+				For each column calulate: MaxCount-ColumnCount+1 (ColumnScore)
+				Probability share of column: ColumnScore / (Sum all ColumnScore)
+   	  */
+    	
+    	let column = new Array(this.gridSquares);
+    	let maxColumnCount = 0;
+    	
+    	for(let i = 0; i < column.length; i++) { column[i] = 0 };
+    	
+    	this.boulderBlocks.forEach(function(boulder) {
+    		console.log(boulder.gridX);
+    		column[boulder.gridX]++;
+    		if(column[boulder.gridX] > maxColumnCount)
+    			maxColumnCount = column[boulder.gridX];
+    	});
+    	
+    	let sumAll = 0;
+    	for(let i = 0; i < column.length; i++) {
+    		column[i] = maxColumnCount-column[i]+1;
+    		sumAll += column[i];
+    	}
+    	
+    	
+    	for(let i = 0; i < column.length; i++) {
+    		column[i] = column[i] / sumAll;
+    	}
+    	
+    	return column;
+    }
   }, 
 
   MissileHandler: function(stage, appSize) {
@@ -311,7 +389,7 @@ var BoulderBlaster = {
     };
   }, 
 
-  CollisionChecker: function (stage, exploHandler) {
+  CollisionHandler: function (stage, exploHandler) {
     BoulderBlaster.bbBase.call(this, stage);
     this.explosionHandler = exploHandler;
     
@@ -340,18 +418,18 @@ var BoulderBlaster = {
         var toDestroy = missileHandler.missiles[removeMissilesIndexes[i]];
         missileHandler.missiles.splice(removeMissilesIndexes[i], 1);
         this.gameStage.removeChild(toDestroy);
+        toDestroy.destroy();
       }
     
       for(let i = removeBouldersIndexes.length-1; i > -1; i--){
         var toDestroy = bbCollection.boulderBlocks[removeBouldersIndexes[i]];
-        bbCollection.boulderBlocks.splice(removeBouldersIndexes[i], 1);
-        this.explosionHandler.placeExplodingBlock(toDestroy.graphic.position.x, toDestroy.graphic.position.y, 0x808080); // ToDo use some kind of boulderColor var
-        bbCollection.regroupBoulderFormation(toDestroy.groupId);
-        this.gameStage.removeChild(toDestroy.graphic);
+        this.explosionHandler.placeExplodingBlock(toDestroy.graphic.position.x, toDestroy.graphic.position.y, toDestroy.boulderColor);
+        bbCollection.removeBoulder(removeBouldersIndexes[i]);
       }
     
       if(removeBouldersIndexes.length > 0){
-        bbCollection.calculateFallingStatusOnBoulders(); // ToDo: Move call to regroupBoulderFormation function?
+        bbCollection.regroupBoulderFormation(toDestroy.groupId);
+        bbCollection.calculateFallingStatusOnBoulders();
       }
     };
     
@@ -441,7 +519,7 @@ var BoulderBlaster = {
     let playerBlock = pb;
     let missileHandler = mh;
     let bbCollection = bbc;
-    let collisionChecker = cc;
+    let CollisionHandler = cc;
     let explosionHandler = eh;
     
     this.startGame = function() {
@@ -480,8 +558,8 @@ var BoulderBlaster = {
     
         bbCollection.moveAllFallingBouldersDown();
         bbCollection.calculateFallingStatusOnBoulders();
-        collisionChecker.detectMissileHit(missileHandler, bbCollection); // A new missile needs to hit adjecten block immediently 
-        if(collisionChecker.checkPlayerBoulderCollision(playerBlock, bbCollection))
+        CollisionHandler.detectMissileHit(missileHandler, bbCollection); // A new missile needs to hit adjecten block immediently 
+        if(CollisionHandler.checkPlayerBoulderCollision(playerBlock, bbCollection))
           playerBlock.removePlayer();
 
         // Add new rock
@@ -531,9 +609,11 @@ var BoulderBlaster = {
         if(changesMade === 0) blocksToMove = false;
       }
       explosionHandler.moveExplodingBlocks();
-    
       missileHandler.moveMissiles();
-      collisionChecker.detectMissileHit(missileHandler, bbCollection);
+      CollisionHandler.detectMissileHit(missileHandler, bbCollection);
+      if(blocksToMove === false) {
+        bbCollection.clearBottomRowIfComplete(explosionHandler);
+      }
     };
   },
 
@@ -556,7 +636,7 @@ var BoulderBlaster = {
         new BoulderBlaster.PlayerEntity(gameStage),
         new BoulderBlaster.MissileHandler(gameStage, application_size),
         new BoulderBlaster.BoulderCollection(gameStage),
-        new BoulderBlaster.CollisionChecker(gameStage, eh), eh)
+        new BoulderBlaster.CollisionHandler(gameStage, eh), eh)
 
       document.body.appendChild(app.view);
       app.ticker.add(delta => logic.gameLoop(delta));
