@@ -17,17 +17,22 @@ var BoulderBlaster = {
     this.gameStage = stage;
   },
 
-  BlockEntity: function(stage, x, y, color, group_id = 0) {
+  BlockEntity: function(stage, x, y, color, group_id = 0, sprite = undefined) {
     BoulderBlaster.bbBase.call(this, stage);
     this.maxBlockSpeed = 4;
 
-    this.graphic = new PIXI.Graphics()
-    this.graphic.beginFill(color);
-    this.graphic.drawRect(0, 0, this.boxSize, this.boxSize);
-    this.graphic.endFill();
-    this.graphic.position.x = x * this.boxSize;
-    this.graphic.position.y = y * this.boxSize;
-    
+		if(sprite != undefined) {
+			this.graphic = sprite;
+		}
+		else {
+			this.graphic = new PIXI.Graphics()
+    	this.graphic.beginFill(color);
+    	this.graphic.drawRect(0, 0, this.boxSize, this.boxSize);
+    	this.graphic.endFill();
+		}
+
+		this.graphic.position.x = x * this.boxSize;
+   	this.graphic.position.y = y * this.boxSize;
     this.gridX = x;
     this.gridY = y;
     this.isFalling = true;
@@ -35,15 +40,17 @@ var BoulderBlaster = {
 
     this.gameStage.addChild(this.graphic);
 
-    this.updateBlockGraphicPosition = function() {
+    this.updateBlockGraphicPosition = function(delta = 0, superSpeed = false) {
+    	let speed = superSpeed ? 5 * this.maxBlockSpeed : this.maxBlockSpeed;
+    	speed += speed + delta;
       var update_mades = 0;
       
       var speedX = 0;
       var targetX = this.gridX * this.boxSize; 
       var diffX = Math.abs(targetX - this.graphic.position.x);
-    
+      
       if(diffX > 0){
-        speedX = diffX < this.maxBlockSpeed ? diffX : this.maxBlockSpeed;
+        speedX = diffX < speed ? diffX : speed;
         speedX *= targetX > this.graphic.position.x ? 1 : -1;
         this.graphic.position.x += speedX; 
         update_mades++; 
@@ -54,7 +61,7 @@ var BoulderBlaster = {
       var diffY = Math.abs(targetY - this.graphic.position.y);
     
       if(diffY > 0){
-        speedY = diffY < this.maxBlockSpeed ? diffY : this.maxBlockSpeed;
+        speedY = diffY < speed ? diffY : speed;
         speedY *= targetY > this.graphic.position.y ? 1 : -1;
         this.graphic.position.y += speedY; 
         update_mades++;
@@ -66,7 +73,7 @@ var BoulderBlaster = {
 
   PlayerEntity: function(stage) {
   	this.isStaged = false;
-    this.playerColor = 0x3498db;
+    this.playerColor = 0xFFD800;
 
     BoulderBlaster.bbBase.call(this, stage);
 
@@ -75,22 +82,26 @@ var BoulderBlaster = {
     this.placePlayer = function() {
     	if(this.graphic)
     		this.graphic.destroy();
-    	BoulderBlaster.BlockEntity.call(this, stage, 
-      Math.floor(Math.random() * this.gridSquares), 4, 
-      this.playerColor);
+    	
+    	BoulderBlaster.BlockEntity.call(this, stage, Math.floor(Math.random() * this.gridSquares), 4, 
+    		this.playerColor, 0, new PIXI.Sprite.fromImage('ship.png')); // ToDo Fix loader
+
       this.isStaged = true;
     }
 
     this.removePlayer = function() {
-    	this.graphic.destroy();
-    	delete this.graphic;
+    	if(this.graphic) {// ToDo Test
+    		this.graphic.destroy();
+    		delete this.graphic;
+    	}
     	this.isStaged = false;
     }
+
   },
 
   BoulderEntity: function (stage, x, y, group_id) {
     this.boulderColor = 0x808080;
-    BoulderBlaster.BlockEntity.call(this, stage, x, y, this.boulderColor, group_id);
+    BoulderBlaster.BlockEntity.call(this, stage, x, y, this.boulderColor, group_id, new PIXI.Sprite.fromImage('boulder.png')); // ToDo Fix loader
   }, 
 
   BoulderCollection: function(stage) {
@@ -260,7 +271,7 @@ var BoulderBlaster = {
     };
 
     this.removeBoulder = function(index) {
-      this.boulderBlocks[index].graphic.destroy();
+      //this.boulderBlocks[index].graphic.destroy();
       this.gameStage.removeChild(this.boulderBlocks[index].graphic);
       this.boulderBlocks.splice(index, 1);
     }
@@ -299,7 +310,6 @@ var BoulderBlaster = {
     	for(let i = 0; i < column.length; i++) { column[i] = 0 };
     	
     	this.boulderBlocks.forEach(function(boulder) {
-    		console.log(boulder.gridX);
     		column[boulder.gridX]++;
     		if(column[boulder.gridX] > maxColumnCount)
     			maxColumnCount = column[boulder.gridX];
@@ -358,7 +368,7 @@ var BoulderBlaster = {
       }, this);
     
       while(this.missiles.length > 0 && 
-        (this.missiles[0].position.y < 0 || this.missiles[0].position.y > this.applicationSize )) {
+        (this.missiles[0].position.y + this.missileHeight < 0 || this.missiles[0].position.y > this.applicationSize )) {
           this.missiles[0].destroy();
           this.missiles.shift();
       }
@@ -418,7 +428,7 @@ var BoulderBlaster = {
         var toDestroy = missileHandler.missiles[removeMissilesIndexes[i]];
         missileHandler.missiles.splice(removeMissilesIndexes[i], 1);
         this.gameStage.removeChild(toDestroy);
-        toDestroy.destroy();
+        //if( undefined toDestroy.destroy();
       }
     
       for(let i = removeBouldersIndexes.length-1; i > -1; i--){
@@ -515,6 +525,7 @@ var BoulderBlaster = {
     var boulderFrequency = 4;
     var blocksToMove = false;
     var movesCounter = 0;
+    let runningIntro = false;
 
     let playerBlock = pb;
     let missileHandler = mh;
@@ -527,13 +538,21 @@ var BoulderBlaster = {
     };
     
     var setGameStage = function() {
-    	playerBlock.placePlayer();
-    	bbCollection.clearBoulders();
-    	bbCollection.generateBoulderFormation(14);
-      bbCollection.generateBoulderFormation(10);
-      bbCollection.generateBoulderFormation(6);
-      bbCollection.generateBoulderFormation();
-      bbCollection.calculateFallingStatusOnBoulders();
+    	runningIntro = true;
+      bbCollection.clearBoulders();
+      playerBlock.removePlayer();// ToDo Test
+      
+      let startY = 14;
+      while(bbCollection.boulderBlocks.length < 32) {
+      	bbCollection.generateBoulderFormation(startY);
+      	startY -= 4; 
+    	}
+      
+     while(bbCollection.boulderBlocks.filter(block => block.isFalling === true).length > 0) {
+      	bbCollection.moveAllFallingBouldersDown();
+      	bbCollection.calculateFallingStatusOnBoulders();
+      }
+      blocksToMove = true;
     };
     
     this.onKeyDown = function (key) {
@@ -600,20 +619,24 @@ var BoulderBlaster = {
     };
     
     this.gameLoop = function(delta) {
+    	//console.log(delta);
       var changesMade = 0;
     
       if(blocksToMove) {
-        if (playerBlock.isStaged) changesMade =+ playerBlock.updateBlockGraphicPosition();
-        bbCollection.boulderBlocks.forEach( function(stoneBlock) {changesMade += stoneBlock.updateBlockGraphicPosition();});
-    
+        if (playerBlock.isStaged) changesMade =+ playerBlock.updateBlockGraphicPosition(delta, runningIntro);
+        bbCollection.boulderBlocks.forEach( function(stoneBlock) {changesMade += stoneBlock.updateBlockGraphicPosition(delta, runningIntro);});
+    //console.log(changesMade);
         if(changesMade === 0) blocksToMove = false;
+        
+        if(blocksToMove === false) {
+        	bbCollection.clearBottomRowIfComplete(explosionHandler);
+        	if(runningIntro) { playerBlock.placePlayer(); runningIntro = false; }
+      	}
       }
       explosionHandler.moveExplodingBlocks();
       missileHandler.moveMissiles();
       CollisionHandler.detectMissileHit(missileHandler, bbCollection);
-      if(blocksToMove === false) {
-        bbCollection.clearBottomRowIfComplete(explosionHandler);
-      }
+      
     };
   },
 
@@ -622,13 +645,19 @@ var BoulderBlaster = {
     let app;
     let logic;
     
+    var mainStage;
+    var backgroundStage;
     var gameStage;
 
     this.initiate = function(document) {
-      app = new PIXI.Application({width: application_size, height: application_size});
-      
+      app = new PIXI.Application({width: application_size, height: application_size, antialias: true});
+            
+      mainStage = new PIXI.Container();
+      backgroundStage = new PIXI.Container();
       gameStage = new PIXI.Container();
-      app.stage = gameStage;
+      mainStage.addChild(backgroundStage);
+      mainStage.addChild(gameStage);
+      app.stage = mainStage;
       
       let eh = new BoulderBlaster.ExplosionHandler(gameStage);
       
@@ -638,12 +667,36 @@ var BoulderBlaster = {
         new BoulderBlaster.BoulderCollection(gameStage),
         new BoulderBlaster.CollisionHandler(gameStage, eh), eh)
 
-      document.body.appendChild(app.view);
+			let div = document.createElement("div");
+			div.style.backgroundImage = "url('console.png')";
+			div.style.padding = "64px 32px 64px 32px";
+			div.style.width = "512px";
+			div.style.margin = "auto";
+			div.appendChild(app.view);
+      document.body.appendChild(div);
+      
       app.ticker.add(delta => logic.gameLoop(delta));
       document.addEventListener('keydown', logic.onKeyDown);
       
+      createGrid(backgroundStage);
       logic.startGame();
     };
+    
+    // ToDo Refactor
+    function createGrid(stage) {
+    	let size = 32;
+    	
+    	for(let i = 0; i < 16; i++) {
+    		for(let j = 0; j < 16; j++) {
+    			var graphics = new PIXI.Graphics();
+					graphics.beginFill(0x000000);
+					graphics.lineStyle(1, 0x202060);
+					graphics.drawRect(i * size, j * size, size, size);
+					stage.addChild(graphics);
+    		}
+   		}
+			
+    }
   },
   
 

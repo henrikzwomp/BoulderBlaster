@@ -25,12 +25,17 @@ describe("GameLogic.startGame", function () {
 		let logic = new BoulderBlaster.GameLogic(app, size, playerBlock, missileHandler, 
 			bbCollection, collisionHandler, explosionHandler);
 
-		spyOn(playerBlock, "placePlayer");
-		spyOn(bbCollection, "clearBoulders");
-		spyOn(bbCollection, "generateBoulderFormation");
-		spyOn(bbCollection, "calculateFallingStatusOnBoulders");
+		spyOn(playerBlock, "placePlayer").and.callThrough();;
+		spyOn(bbCollection, "clearBoulders").and.callThrough();;
+		spyOn(bbCollection, "generateBoulderFormation").and.callThrough();;
+		spyOn(bbCollection, "calculateFallingStatusOnBoulders").and.callThrough();;
 
 		logic.startGame();
+		for(let i = 0; i < 60; i++) // Run through intro.
+		{
+			logic.gameLoop(0);
+		}
+			
 
 		expect(playerBlock.placePlayer).toHaveBeenCalled();
 		expect(bbCollection.clearBoulders).toHaveBeenCalled();
@@ -66,12 +71,16 @@ describe("GameLogic.onKeyDown", function () {
 		let logic = new BoulderBlaster.GameLogic(app, size, playerBlock, missileHandler, 
 			bbCollection, collisionHandler, explosionHandler);
 
-		spyOn(playerBlock, "placePlayer");
-		spyOn(bbCollection, "clearBoulders");
-		spyOn(bbCollection, "generateBoulderFormation");
-		spyOn(bbCollection, "calculateFallingStatusOnBoulders");
+		spyOn(playerBlock, "placePlayer").and.callThrough();
+		spyOn(bbCollection, "clearBoulders").and.callThrough();
+		spyOn(bbCollection, "generateBoulderFormation").and.callThrough();
+		spyOn(bbCollection, "calculateFallingStatusOnBoulders").and.callThrough();
 
 		logic.onKeyDown(key);
+		for(let i = 0; i < 60; i++) // Run through intro.
+		{
+			logic.gameLoop(0);
+		}
 
 		expect(playerBlock.placePlayer).toHaveBeenCalled();
 		expect(bbCollection.clearBoulders).toHaveBeenCalled();
@@ -175,7 +184,7 @@ describe("GameLogic.onKeyDown", function () {
 
 		playerBlock.placePlayer();
 		
-		spyOn(missileHandler, "createMissile");
+		spyOn(missileHandler, "createMissile").and.callThrough();
 
 		logic.onKeyDown(key);
 
@@ -191,7 +200,7 @@ describe("GameLogic.onKeyDown", function () {
 
 		playerBlock.placePlayer();
 		
-		spyOn(missileHandler, "createMissile");
+		spyOn(missileHandler, "createMissile").and.callThrough();
 
 		logic.onKeyDown(key);
 
@@ -207,10 +216,10 @@ describe("GameLogic.onKeyDown", function () {
 
 		playerBlock.placePlayer();
 		
-		spyOn(bbCollection, "moveAllFallingBouldersDown");
-		spyOn(bbCollection, "calculateFallingStatusOnBoulders");
-		spyOn(collisionHandler, "detectMissileHit");
-		spyOn(collisionHandler, "checkPlayerBoulderCollision");
+		spyOn(bbCollection, "moveAllFallingBouldersDown").and.callThrough();
+		spyOn(bbCollection, "calculateFallingStatusOnBoulders").and.callThrough();
+		spyOn(collisionHandler, "detectMissileHit").and.callThrough();
+		spyOn(collisionHandler, "checkPlayerBoulderCollision").and.callThrough();
 
 		logic.onKeyDown(key);
 
@@ -228,7 +237,7 @@ describe("GameLogic.onKeyDown", function () {
 
 		playerBlock.placePlayer();
 		
-		spyOn(bbCollection, "generateBoulderFormation");
+		spyOn(bbCollection, "generateBoulderFormation").and.callThrough();
 
 		for(let i = 0; i < 20; i++) {
 			for(let j = 0; j < 20; j++)
@@ -275,9 +284,9 @@ describe("GameLogic.gameLoop", function () {
 
 		playerBlock.placePlayer();
 		
-		spyOn(explosionHandler, "moveExplodingBlocks");
-		spyOn(missileHandler, "moveMissiles");
-		spyOn(collisionHandler, "detectMissileHit");
+		spyOn(explosionHandler, "moveExplodingBlocks").and.callThrough();
+		spyOn(missileHandler, "moveMissiles").and.callThrough();
+		spyOn(collisionHandler, "detectMissileHit").and.callThrough();
 
 		logic.gameLoop(0);
 
@@ -295,8 +304,8 @@ describe("GameLogic.gameLoop", function () {
 		playerBlock.placePlayer();
 		bbCollection.boulderBlocks.push(new BoulderBlaster.BoulderEntity(app.stage, 0, 0, 2));
 		
-		spyOn(playerBlock, "updateBlockGraphicPosition");
-		spyOn(bbCollection.boulderBlocks[0], "updateBlockGraphicPosition");
+		spyOn(playerBlock, "updateBlockGraphicPosition").and.callThrough();
+		spyOn(bbCollection.boulderBlocks[0], "updateBlockGraphicPosition").and.callThrough();
 
 		logic.onKeyDown(key);
 		logic.gameLoop(0);
@@ -320,8 +329,8 @@ describe("GameLogic.gameLoop", function () {
 		bbCollection.boulderBlocks.push(new BoulderBlaster.BoulderEntity(app.stage, 2, 2, 2));
 		bbCollection.boulderBlocks[2].isFalling = false;
 		
-		spyOn(bbCollection, "clearBottomRowIfComplete").and.callThrough();
-		spyOn(explosionHandler, "placeExplodingBlock").and.callThrough();
+		spyOn(bbCollection, "clearBottomRowIfComplete").and.callThrough().and.callThrough();
+		spyOn(explosionHandler, "placeExplodingBlock").and.callThrough().and.callThrough();
 
 		logic.onKeyDown(key);
 
