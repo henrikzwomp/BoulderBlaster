@@ -2,13 +2,15 @@
 
 describe("PlayerEntity.placePlayer", function () {
     let stage;
+    let resourceHolder;
 
 	beforeEach(function () {
 		stage = new PIXI.Container();
+		resourceHolder = new BoulderBlaster.ResourceHolder();
 	});
 
     it("Can place Player.", function() {
-        var player = new BoulderBlaster.PlayerEntity(stage);
+        var player = new BoulderBlaster.PlayerEntity(stage, resourceHolder);
 
         expect(player.gridX).not.toBeDefined();
         expect(player.gridY).not.toBeDefined();
@@ -24,7 +26,7 @@ describe("PlayerEntity.placePlayer", function () {
     });
 
     it("Can call placePlayer twice without adding two player graphics.", function() {
-        var player = new BoulderBlaster.PlayerEntity(stage);
+        var player = new BoulderBlaster.PlayerEntity(stage, resourceHolder);
 
         expect(stage.children.length).toBe(0);
 
@@ -40,13 +42,15 @@ describe("PlayerEntity.placePlayer", function () {
 
 describe("PlayerEntity.removePlayer", function () {
     let stage;
+    let resourceHolder;
 
 	beforeEach(function () {
 		stage = new PIXI.Container();
+		resourceHolder = new BoulderBlaster.ResourceHolder();
 	});
 
     it("Can remove Player.", function() {
-        var player = new BoulderBlaster.PlayerEntity(stage);
+        var player = new BoulderBlaster.PlayerEntity(stage, resourceHolder);
 
         expect(player.gridX).not.toBeDefined();
         expect(player.gridY).not.toBeDefined();

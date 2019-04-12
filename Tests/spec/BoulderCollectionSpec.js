@@ -2,13 +2,15 @@
 
 describe("BoulderCollection.generateBoulderFormation", function () {
 	let stage;
+	let resourceHolder;
 	
 	beforeEach(function () {
 			stage = new PIXI.Container();
+			resourceHolder = new BoulderBlaster.ResourceHolder();
   	});
 	
 	it("Can Generate a Boulder Formation.", function() {
-		let bc = new BoulderBlaster.BoulderCollection(stage);
+		let bc = new BoulderBlaster.BoulderCollection(stage, resourceHolder);
 		
 		expect(bc.boulderBlocks.length).toBe(0);
 		
@@ -18,7 +20,7 @@ describe("BoulderCollection.generateBoulderFormation", function () {
 	});
 	
 	it("Don't generate boulders outside game grid X values.", function() {
-		let bc = new BoulderBlaster.BoulderCollection(stage);
+		let bc = new BoulderBlaster.BoulderCollection(stage, resourceHolder);
 		
 		bc.gridSquares = 1;
 		
@@ -40,23 +42,25 @@ describe("BoulderCollection.generateBoulderFormation", function () {
 
 describe("BoulderCollection.calculateFallingStatusOnBoulders", function () {
 	let stage;
+	let resourceHolder;
 	
 	beforeEach(function () {
 			stage = new PIXI.Container();
+			resourceHolder = new BoulderBlaster.ResourceHolder();
   	});
 
 	it("Can Calculate Falling Status On Boulders.", function() {
-		let bc = new BoulderBlaster.BoulderCollection(stage);
+		let bc = new BoulderBlaster.BoulderCollection(stage, resourceHolder);
 		bc.gridSquares = 3;
 
-		let boulder11 = new BoulderBlaster.BoulderEntity(stage, 0, 0, 1);
+		let boulder11 = new BoulderBlaster.BoulderEntity(stage, 0, 0, 1, resourceHolder);
 		bc.boulderBlocks.push(boulder11);
-		let boulder12 = new BoulderBlaster.BoulderEntity(stage, 0, 1, 1)
+		let boulder12 = new BoulderBlaster.BoulderEntity(stage, 0, 1, 1, resourceHolder)
 		bc.boulderBlocks.push(boulder12);
 
-		let boulder21 = new BoulderBlaster.BoulderEntity(stage, 2, 1, 2)
+		let boulder21 = new BoulderBlaster.BoulderEntity(stage, 2, 1, 2, resourceHolder)
 		bc.boulderBlocks.push(boulder21);
-		let boulder22 = new BoulderBlaster.BoulderEntity(stage, 2, 2, 2)
+		let boulder22 = new BoulderBlaster.BoulderEntity(stage, 2, 2, 2, resourceHolder)
 		bc.boulderBlocks.push(boulder22);
 
 		bc.calculateFallingStatusOnBoulders();
@@ -70,20 +74,20 @@ describe("BoulderCollection.calculateFallingStatusOnBoulders", function () {
 	it("Can reassign falling status if blocks below are cleared.", function() {
 		let eh = new BoulderBlaster.ExplosionHandler(stage);
 		
-		let bc = new BoulderBlaster.BoulderCollection(stage);
+		let bc = new BoulderBlaster.BoulderCollection(stage, resourceHolder);
 		bc.gridSquares = 3;
 
-		bc.boulderBlocks.push(new BoulderBlaster.BoulderEntity(stage, 0, 2, 1));
+		bc.boulderBlocks.push(new BoulderBlaster.BoulderEntity(stage, 0, 2, 1, resourceHolder));
 		bc.boulderBlocks[0].isFalling = false;
-		bc.boulderBlocks.push(new BoulderBlaster.BoulderEntity(stage, 1, 2, 1));
+		bc.boulderBlocks.push(new BoulderBlaster.BoulderEntity(stage, 1, 2, 1, resourceHolder));
 		bc.boulderBlocks[1].isFalling = false;
-		bc.boulderBlocks.push(new BoulderBlaster.BoulderEntity(stage, 2, 2, 1));
+		bc.boulderBlocks.push(new BoulderBlaster.BoulderEntity(stage, 2, 2, 1, resourceHolder));
 		bc.boulderBlocks[2].isFalling = false;
-		bc.boulderBlocks.push(new BoulderBlaster.BoulderEntity(stage, 0, 1, 2));
+		bc.boulderBlocks.push(new BoulderBlaster.BoulderEntity(stage, 0, 1, 2, resourceHolder));
 		bc.boulderBlocks[3].isFalling = false;
-		bc.boulderBlocks.push(new BoulderBlaster.BoulderEntity(stage, 1, 1, 2));
+		bc.boulderBlocks.push(new BoulderBlaster.BoulderEntity(stage, 1, 1, 2, resourceHolder));
 		bc.boulderBlocks[4].isFalling = false;
-		bc.boulderBlocks.push(new BoulderBlaster.BoulderEntity(stage, 2, 1, 2));
+		bc.boulderBlocks.push(new BoulderBlaster.BoulderEntity(stage, 2, 1, 2, resourceHolder));
 		bc.boulderBlocks[5].isFalling = false;
 		
 		expect(bc.boulderBlocks.length).toBe(6);
@@ -101,24 +105,26 @@ describe("BoulderCollection.calculateFallingStatusOnBoulders", function () {
 
 describe("BoulderCollection.moveAllFallingBouldersDown", function () {
 	let stage;
+	let resourceHolder;
 	
 	beforeEach(function () {
 			stage = new PIXI.Container();
+			resourceHolder = new BoulderBlaster.ResourceHolder();
 	  });
 	  
 	it("Can Move only falling Boulders Down.", function() {
-		let bc = new BoulderBlaster.BoulderCollection(stage);
+		let bc = new BoulderBlaster.BoulderCollection(stage, resourceHolder);
 		bc.gridSquares = 3;
 
-		let boulder11 = new BoulderBlaster.BoulderEntity(stage, 0, 0, 1);
+		let boulder11 = new BoulderBlaster.BoulderEntity(stage, 0, 0, 1, resourceHolder);
 		bc.boulderBlocks.push(boulder11);
-		let boulder12 = new BoulderBlaster.BoulderEntity(stage, 0, 1, 1)
+		let boulder12 = new BoulderBlaster.BoulderEntity(stage, 0, 1, 1, resourceHolder)
 		bc.boulderBlocks.push(boulder12);
 
-		let boulder21 = new BoulderBlaster.BoulderEntity(stage, 2, 1, 2)
+		let boulder21 = new BoulderBlaster.BoulderEntity(stage, 2, 1, 2, resourceHolder)
 		boulder21.isFalling = false;
 		bc.boulderBlocks.push(boulder21);
-		let boulder22 = new BoulderBlaster.BoulderEntity(stage, 2, 2, 2)
+		let boulder22 = new BoulderBlaster.BoulderEntity(stage, 2, 2, 2, resourceHolder)
 		boulder22.isFalling = false;
 		bc.boulderBlocks.push(boulder22);
 
@@ -133,23 +139,25 @@ describe("BoulderCollection.moveAllFallingBouldersDown", function () {
 
 describe("BoulderCollection.regroupBoulderFormation", function () {
 	let stage;
+	let resourceHolder;
 	
 	beforeEach(function () {
 			stage = new PIXI.Container();
+			resourceHolder = new BoulderBlaster.ResourceHolder();
   	});
 
 	it("Can assign new group Ids to seperate formations.", function() {
-		let bc = new BoulderBlaster.BoulderCollection(stage);
+		let bc = new BoulderBlaster.BoulderCollection(stage, resourceHolder);
 		bc.boulderFormationIdCount = 4;
 
-		let boulder11 = new BoulderBlaster.BoulderEntity(stage, 0, 0, 1);
+		let boulder11 = new BoulderBlaster.BoulderEntity(stage, 0, 0, 1, resourceHolder);
 		bc.boulderBlocks.push(boulder11);
-		let boulder12 = new BoulderBlaster.BoulderEntity(stage, 0, 1, 1)
+		let boulder12 = new BoulderBlaster.BoulderEntity(stage, 0, 1, 1, resourceHolder)
 		bc.boulderBlocks.push(boulder12);
 
-		let boulder21 = new BoulderBlaster.BoulderEntity(stage, 2, 1, 1)
+		let boulder21 = new BoulderBlaster.BoulderEntity(stage, 2, 1, 1, resourceHolder)
 		bc.boulderBlocks.push(boulder21);
-		let boulder22 = new BoulderBlaster.BoulderEntity(stage, 2, 2, 1)
+		let boulder22 = new BoulderBlaster.BoulderEntity(stage, 2, 2, 1, resourceHolder)
 		bc.boulderBlocks.push(boulder22);
 
 		bc.regroupBoulderFormation(1);
@@ -168,13 +176,15 @@ describe("BoulderCollection.regroupBoulderFormation", function () {
 
 describe("BoulderCollection.clearBoulders", function () {
 	let stage;
+	let resourceHolder;
 	
 	beforeEach(function () {
 			stage = new PIXI.Container();
+			resourceHolder = new BoulderBlaster.ResourceHolder();
   	});
 	
 	it("Can clear Boulders (including graphics).", function() {
-		let bc = new BoulderBlaster.BoulderCollection(stage);
+		let bc = new BoulderBlaster.BoulderCollection(stage, resourceHolder);
 		
 		expect(bc.boulderBlocks.length).toBe(0);
 		expect(stage.children.length).toBe(0);
@@ -193,20 +203,22 @@ describe("BoulderCollection.clearBoulders", function () {
 
 describe("BoulderCollection.clearBottomRowIfComplete", function () {
 	let stage;
+	let resourceHolder;
 	
 	beforeEach(function () {
 			stage = new PIXI.Container();
+			resourceHolder = new BoulderBlaster.ResourceHolder();
 	});
 
 	it("Can clear bottom row if complete (and place exploding blocks).", function() {
 		let eh = new BoulderBlaster.ExplosionHandler(stage);
 
-		let bc = new BoulderBlaster.BoulderCollection(stage);
+		let bc = new BoulderBlaster.BoulderCollection(stage, resourceHolder);
 		bc.gridSquares = 3;
 
-		bc.boulderBlocks.push(new BoulderBlaster.BoulderEntity(stage, 0, 2, 1));
+		bc.boulderBlocks.push(new BoulderBlaster.BoulderEntity(stage, 0, 2, 1, resourceHolder));
 		bc.boulderBlocks[0].isFalling = false;
-		bc.boulderBlocks.push(new BoulderBlaster.BoulderEntity(stage, 1, 2, 1));
+		bc.boulderBlocks.push(new BoulderBlaster.BoulderEntity(stage, 1, 2, 1, resourceHolder));
 		bc.boulderBlocks[1].isFalling = false;
 
 		spyOn(eh, "placeExplodingBlock");
@@ -217,7 +229,7 @@ describe("BoulderCollection.clearBottomRowIfComplete", function () {
 
 		expect(bc.boulderBlocks.length).toBe(2);
 
-		bc.boulderBlocks.push(new BoulderBlaster.BoulderEntity(stage, 2, 2, 1));
+		bc.boulderBlocks.push(new BoulderBlaster.BoulderEntity(stage, 2, 2, 1, resourceHolder));
 		bc.boulderBlocks[2].isFalling = false;
 
 		expect(bc.boulderBlocks.length).toBe(3);
@@ -231,14 +243,14 @@ describe("BoulderCollection.clearBottomRowIfComplete", function () {
 	it("Will ignore still falling blocks", function() {
 		let eh = new BoulderBlaster.ExplosionHandler(stage);
 
-		let bc = new BoulderBlaster.BoulderCollection(stage);
+		let bc = new BoulderBlaster.BoulderCollection(stage, resourceHolder);
 		bc.gridSquares = 3;
 
-		bc.boulderBlocks.push(new BoulderBlaster.BoulderEntity(stage, 0, 2, 1));
+		bc.boulderBlocks.push(new BoulderBlaster.BoulderEntity(stage, 0, 2, 1, resourceHolder));
 		bc.boulderBlocks[0].isFalling = false;
-		bc.boulderBlocks.push(new BoulderBlaster.BoulderEntity(stage, 1, 2, 1));
+		bc.boulderBlocks.push(new BoulderBlaster.BoulderEntity(stage, 1, 2, 1, resourceHolder));
 		bc.boulderBlocks[1].isFalling = false;
-		bc.boulderBlocks.push(new BoulderBlaster.BoulderEntity(stage, 2, 2, 1));
+		bc.boulderBlocks.push(new BoulderBlaster.BoulderEntity(stage, 2, 2, 1, resourceHolder));
 		bc.boulderBlocks[2].isFalling = true;
 
 		expect(bc.boulderBlocks.length).toBe(3);
@@ -263,21 +275,23 @@ Output: 0,102	0,061	0,061	0,041	0,020	0,061	0,102	0,102	0,102	0,082	0,061	0,020	
 */
 describe("BoulderCollection.getColumnProbabilityShares", function () {
 	let stage;
+	let resourceHolder;
 	
 	beforeEach(function () {
 			stage = new PIXI.Container();
+			resourceHolder = new BoulderBlaster.ResourceHolder();
 	});
 	
 	it("Can calculate Column probability shares.", function() {
-		let bc = new BoulderBlaster.BoulderCollection(stage);
+		let bc = new BoulderBlaster.BoulderCollection(stage, resourceHolder);
 		
 		bc.gridSquares = 16;
 		let blouderCount = [0,2,2,3,4,2,0,0,0,1,2,4,3,3,2,3];
-		//bc.boulderBlocks.push(new BoulderBlaster.BoulderEntity(stage, 1, 1, 1);
+		//bc.boulderBlocks.push(new BoulderBlaster.BoulderEntity(stage, 1, 1, 1, resourceHolder);
 		
 		for(let i = 0; i < blouderCount.length; i++) {
 			for(let j = 0; j < blouderCount[i]; j++) {
-				bc.boulderBlocks.push(new BoulderBlaster.BoulderEntity(stage, i, 1, 1));
+				bc.boulderBlocks.push(new BoulderBlaster.BoulderEntity(stage, i, 1, 1, resourceHolder));
 			}
 		}
 
@@ -306,7 +320,7 @@ describe("BoulderCollection.getColumnProbabilityShares", function () {
 	});
 	
 	it("Can calculate Column probability shares with zero boulders.", function() {
-		let bc = new BoulderBlaster.BoulderCollection(stage);
+		let bc = new BoulderBlaster.BoulderCollection(stage, resourceHolder);
 		
 		bc.gridSquares = 16;
 	

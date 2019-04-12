@@ -4,21 +4,22 @@ describe("GameLogic.startGame", function () {
 	let size = 512;
 	let app = new PIXI.Application({width: size, height: size});
 	let playerBlock;
-    let missileHandler;
-    let bbCollection;
-    let collisionHandler;
-    let explosionHandler;
+  let missileHandler;
+  let bbCollection;
+  let collisionHandler;
+  let explosionHandler;
+  let resourceHolder;
 
 	beforeEach(function () {
 		let gameStage = new PIXI.Container();
       	app.stage = gameStage;
 
+		resourceHolder = new BoulderBlaster.ResourceHolder();
 		explosionHandler = new BoulderBlaster.ExplosionHandler(gameStage);
-		playerBlock = new BoulderBlaster.PlayerEntity(gameStage);
-        missileHandler = new BoulderBlaster.MissileHandler(gameStage, size);
-		bbCollection = new BoulderBlaster.BoulderCollection(gameStage);
-		//console.log(BoulderBlaster);
-        collisionHandler = new BoulderBlaster.CollisionHandler(gameStage, explosionHandler);
+		playerBlock = new BoulderBlaster.PlayerEntity(gameStage, resourceHolder);
+		missileHandler = new BoulderBlaster.MissileHandler(gameStage, size);
+		bbCollection = new BoulderBlaster.BoulderCollection(gameStage, resourceHolder);
+		collisionHandler = new BoulderBlaster.CollisionHandler(gameStage, explosionHandler);
 	});
 	
 	it("Will Start the game as expected.", function() {
@@ -52,16 +53,18 @@ describe("GameLogic.onKeyDown", function () {
     let bbCollection;
     let collisionHandler;
     let explosionHandler;
+    let resourceHolder;
 
 	beforeEach(function () {
 		let gameStage = new PIXI.Container();
       	app.stage = gameStage;
 
+		resourceHolder = new BoulderBlaster.ResourceHolder();
 		explosionHandler = new BoulderBlaster.ExplosionHandler(gameStage);
-		playerBlock = new BoulderBlaster.PlayerEntity(gameStage);
-        missileHandler = new BoulderBlaster.MissileHandler(gameStage, size);
-        bbCollection = new BoulderBlaster.BoulderCollection(gameStage);
-        collisionHandler = new BoulderBlaster.CollisionHandler(gameStage, explosionHandler);
+		playerBlock = new BoulderBlaster.PlayerEntity(gameStage, resourceHolder);
+		missileHandler = new BoulderBlaster.MissileHandler(gameStage, size);
+		bbCollection = new BoulderBlaster.BoulderCollection(gameStage, resourceHolder);
+		collisionHandler = new BoulderBlaster.CollisionHandler(gameStage, explosionHandler);
 	});
 	
 	it("Can restart game.", function() {
@@ -157,7 +160,8 @@ describe("GameLogic.onKeyDown", function () {
 		expect(playerBlock.lastGridXMove).toBe(0);
 	});
 
-	it("Will not accept player move until animation is complete.", function() {
+	// Removed this restriction
+	/*it("Will not accept player move until animation is complete.", function() {
 		let key = {keyCode: 68, preventDefault: function() {}}; // D 
 
 		let logic = new BoulderBlaster.GameLogic(app, size, playerBlock, missileHandler, 
@@ -174,7 +178,7 @@ describe("GameLogic.onKeyDown", function () {
 		logic.onKeyDown(key);
 
 		expect(playerBlock.gridX).toBe(1);
-	});
+	});*/
 
 	it("Can shoot missile up.", function() {
 		let key = {keyCode: 87, preventDefault: function() {}}; // W
@@ -258,16 +262,18 @@ describe("GameLogic.gameLoop", function () {
     let bbCollection;
     let collisionHandler;
     let explosionHandler;
+    let resourceHolder;
 
 	beforeEach(function () {
 		let gameStage = new PIXI.Container();
       	app.stage = gameStage;
 
+		resourceHolder = new BoulderBlaster.ResourceHolder();
 		explosionHandler = new BoulderBlaster.ExplosionHandler(gameStage);
-		playerBlock = new BoulderBlaster.PlayerEntity(gameStage);
-        missileHandler = new BoulderBlaster.MissileHandler(gameStage, size);
-        bbCollection = new BoulderBlaster.BoulderCollection(gameStage);
-        collisionHandler = new BoulderBlaster.CollisionHandler(gameStage, explosionHandler);
+		playerBlock = new BoulderBlaster.PlayerEntity(gameStage, resourceHolder);
+		missileHandler = new BoulderBlaster.MissileHandler(gameStage, size);
+		bbCollection = new BoulderBlaster.BoulderCollection(gameStage, resourceHolder);
+		collisionHandler = new BoulderBlaster.CollisionHandler(gameStage, explosionHandler);
 	});
 	
 	afterEach(function () {
@@ -302,7 +308,7 @@ describe("GameLogic.gameLoop", function () {
 		let key = {keyCode: 65, preventDefault: function() {}}; // A 
 
 		playerBlock.placePlayer();
-		bbCollection.boulderBlocks.push(new BoulderBlaster.BoulderEntity(app.stage, 0, 0, 2));
+		bbCollection.boulderBlocks.push(new BoulderBlaster.BoulderEntity(app.stage, 0, 0, 2, resourceHolder));
 		
 		spyOn(playerBlock, "updateBlockGraphicPosition").and.callThrough();
 		spyOn(bbCollection.boulderBlocks[0], "updateBlockGraphicPosition").and.callThrough();
@@ -322,11 +328,11 @@ describe("GameLogic.gameLoop", function () {
 
 		playerBlock.placePlayer();
 		bbCollection.gridSquares = 3;
-		bbCollection.boulderBlocks.push(new BoulderBlaster.BoulderEntity(app.stage, 0, 2, 2));
+		bbCollection.boulderBlocks.push(new BoulderBlaster.BoulderEntity(app.stage, 0, 2, 2, resourceHolder));
 		bbCollection.boulderBlocks[0].isFalling = false;
-		bbCollection.boulderBlocks.push(new BoulderBlaster.BoulderEntity(app.stage, 1, 2, 2));
+		bbCollection.boulderBlocks.push(new BoulderBlaster.BoulderEntity(app.stage, 1, 2, 2, resourceHolder));
 		bbCollection.boulderBlocks[1].isFalling = false;
-		bbCollection.boulderBlocks.push(new BoulderBlaster.BoulderEntity(app.stage, 2, 2, 2));
+		bbCollection.boulderBlocks.push(new BoulderBlaster.BoulderEntity(app.stage, 2, 2, 2, resourceHolder));
 		bbCollection.boulderBlocks[2].isFalling = false;
 		
 		spyOn(bbCollection, "clearBottomRowIfComplete").and.callThrough().and.callThrough();
