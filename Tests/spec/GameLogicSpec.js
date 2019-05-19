@@ -26,10 +26,10 @@ describe("GameLogic.startGame", function () {
 		let logic = new BoulderBlaster.GameLogic(app, size, playerBlock, missileHandler, 
 			bbCollection, collisionHandler, explosionHandler);
 
-		spyOn(playerBlock, "placePlayer").and.callThrough();;
-		spyOn(bbCollection, "clearBoulders").and.callThrough();;
-		spyOn(bbCollection, "generateBoulderFormation").and.callThrough();;
-		spyOn(bbCollection, "calculateFallingStatusOnBoulders").and.callThrough();;
+		spyOn(playerBlock, "placePlayer").and.callThrough();
+		spyOn(bbCollection, "clearBoulders").and.callThrough();
+		spyOn(bbCollection, "generateBoulderFormation").and.callThrough();
+		spyOn(bbCollection, "calculateFallingStatusOnBoulders").and.callThrough();
 
 		logic.startGame();
 		for(let i = 0; i < 60; i++) // Run through intro.

@@ -40,7 +40,7 @@ var BoulderBlaster = {
 
     this.gameStage.addChild(this.graphic);
 
-    this.updateBlockGraphicPosition = function(delta = 0, superSpeed = false) {
+    this.updateBlockGraphicPosition = function(delta = 0, superSpeed = false, effect = null) {
     	let speed = superSpeed ? 5 * this.maxBlockSpeed : this.maxBlockSpeed;
     	speed += speed + delta;
       var update_mades = 0;
@@ -66,6 +66,9 @@ var BoulderBlaster = {
         this.graphic.position.y += speedY; 
         update_mades++;
       }
+      
+      if(effect) // ToDo Test
+      	effect(this);
     
       return update_mades;
     };
@@ -74,10 +77,12 @@ var BoulderBlaster = {
   PlayerEntity: function(stage, resourceHolder) {
   	this.isStaged = false;
     this.playerColor = 0xFFD800;
+    this.flames = [];
 
     BoulderBlaster.bbBase.call(this, stage);
 
     this.lastGridXMove = 0;
+    this.lastXPos = 0;
     
     this.placePlayer = function() {
     	if(this.graphic)
@@ -87,6 +92,8 @@ var BoulderBlaster = {
     		this.playerColor, 0, resourceHolder.getGraphic('ship') ); // new PIXI.Sprite(resources.ship.texture)
 
       this.isStaged = true;
+      
+      this.lastXPos  = this.graphic.position.x;
     }
 
     this.removePlayer = function() {
@@ -97,6 +104,47 @@ var BoulderBlaster = {
     	this.isStaged = false;
     }
 
+		// ToDo position is wrong
+		this.addFlame = function(obj) { // ToDo Test
+			let x1 = obj.lastXPos;
+			let x2 = obj.graphic.position.x;
+			let y = obj.graphic.position.y;
+			let direction = x1 > x2 ? -1 : 1;
+			
+			let flame = new PIXI.Graphics();
+		  flame.beginFill(0xc0f0f0);
+		  flame.drawRect(0, 0, (x1-x2) * 0.85 , 6);
+		  flame.endFill();
+		  
+		  flame.position.y = y + 16 - (flame.height/2);
+		  
+		  if(direction < 0) {
+		  	flame.position.x = x2+32;
+		  }
+		  else {
+		  	flame.position.x = x2;
+		  }
+		    
+		  flame.va = -0.05;
+		  
+		  obj.flames.push(flame);
+		  stage.addChild(flame);
+		  stage.setChildIndex(flame, 0);
+		  
+		  obj.lastXPos  = obj.graphic.position.x;
+		}
+		
+		this.updateFlames = function() {
+			this.flames.forEach(flame => {
+				flame.alpha += flame.va;
+			});
+			
+			while(this.flames.length > 0 && this.flames[0].alpha <= 0) {
+				this.flames[0].destroy();
+				this.flames.shift();
+			}
+		}
+		
   },
 
   BoulderEntity: function (stage, x, y, group_id, resourceHolder) {
@@ -451,6 +499,8 @@ var BoulderBlaster = {
       this.gameStage.addChild(flame);
       this.gameStage.setChildIndex(flame, 0);
     };
+    
+
   }, 
 
   CollisionHandler: function (stage, exploHandler) {
@@ -730,13 +780,11 @@ var BoulderBlaster = {
     };
     
     this.gameLoop = function(delta) {
-    	//console.log(delta);
       var changesMade = 0;
     
       if(blocksToMove) {
-        if (playerBlock.isStaged) changesMade =+ playerBlock.updateBlockGraphicPosition(delta, runningIntro);
+        if (playerBlock.isStaged) changesMade =+ playerBlock.updateBlockGraphicPosition(delta, runningIntro, playerBlock.addFlame);
         bbCollection.boulderBlocks.forEach( function(stoneBlock) {changesMade += stoneBlock.updateBlockGraphicPosition(delta, runningIntro);});
-    //console.log(changesMade);
         if(changesMade === 0) blocksToMove = false;
         
         if(blocksToMove === false) {
@@ -747,7 +795,8 @@ var BoulderBlaster = {
       explosionHandler.moveExplodingBlocks();
       missileHandler.moveMissiles();
       CollisionHandler.detectMissileHit(missileHandler, bbCollection);
-      
+      playerBlock.updateFlames();
+      //bbCollection.updateGhosts();
     };
   },
 
