@@ -19,7 +19,7 @@ var BoulderBlaster = {
 
   BlockEntity: function(stage, x, y, color, group_id = 0, sprite = undefined) {
     BoulderBlaster.bbBase.call(this, stage);
-    this.maxBlockSpeed = 4;
+    this.maxBlockSpeed = 2;
 
 		if(sprite != undefined) {
 			this.graphic = sprite;
@@ -41,7 +41,7 @@ var BoulderBlaster = {
     this.gameStage.addChild(this.graphic);
 
     this.updateBlockGraphicPosition = function(delta = 0, superSpeed = false, effect = null) {
-    	let speed = superSpeed ? 5 * this.maxBlockSpeed : this.maxBlockSpeed;
+    	let speed = superSpeed ? 8 * this.maxBlockSpeed : this.maxBlockSpeed;
     	speed += speed + delta;
       var update_mades = 0;
       
@@ -77,7 +77,7 @@ var BoulderBlaster = {
   PlayerEntity: function(stage, resourceHolder) {
   	this.isStaged = false;
     this.playerColor = 0xFFD800;
-    this.flames = [];
+    this.flames = [];  // ToDo: Should be rename
 
     BoulderBlaster.bbBase.call(this, stage);
 
@@ -94,6 +94,33 @@ var BoulderBlaster = {
       this.isStaged = true;
       
       this.lastXPos  = this.graphic.position.x;
+
+      // Intro effect
+      let cSmaller = new PIXI.Graphics();
+      cSmaller.beginFill(0xccffff);
+      cSmaller.drawCircle(0,0,64)
+      cSmaller.position.x = this.gridX * this.boxSize + this.boxSize / 2;
+      cSmaller.position.y = this.gridY * this.boxSize + this.boxSize / 2;
+      cSmaller.endFill();
+      cSmaller.alpha = 0;
+      cSmaller.va = 0.02;
+      cSmaller.vs = -0.03;
+  
+      let cBigger = new PIXI.Graphics();
+      cBigger.beginFill(0xccffff);
+      cBigger.drawCircle(0,0,10)
+      cBigger.position.x = this.gridX * this.boxSize + this.boxSize / 2;
+      cBigger.position.y = this.gridY * this.boxSize + this.boxSize / 2;
+      cBigger.endFill();
+      cBigger.va = -0.04;
+      cBigger.vs = 0.2;
+
+      this.flames.push(cSmaller);
+		  stage.addChild(cSmaller);
+      stage.setChildIndex(cSmaller, 0);
+      this.flames.push(cBigger);
+		  stage.addChild(cBigger);
+		  stage.setChildIndex(cBigger, stage.children.length-1);
     }
 
     this.removePlayer = function() {
@@ -136,7 +163,16 @@ var BoulderBlaster = {
 		
 		this.updateFlames = function() {
 			this.flames.forEach(flame => {
-				flame.alpha += flame.va;
+        flame.alpha += flame.va;
+        
+        if(flame.vs){
+          flame.scale.x += flame.vs;
+          flame.scale.y += flame.vs;
+
+          if(flame.scale.x < 0)
+            flame.alpha = 0;
+        }
+        
 			});
 			
 			while(this.flames.length > 0 && this.flames[0].alpha <= 0) {
@@ -144,7 +180,6 @@ var BoulderBlaster = {
 				this.flames.shift();
 			}
 		}
-		
   },
 
   BoulderEntity: function (stage, x, y, group_id, resourceHolder) {
@@ -282,7 +317,10 @@ var BoulderBlaster = {
     this.moveAllFallingBouldersDown = function() {
       this.boulderBlocks.forEach( function(stoneBlock)  {
         if(stoneBlock.gridY < stoneBlock.gridSquares - 1 && stoneBlock.isFalling)
-          stoneBlock.gridY++;
+        {
+        	stoneBlock.gridY++;
+        	}
+          
       });
     };
 
@@ -796,7 +834,6 @@ var BoulderBlaster = {
       missileHandler.moveMissiles();
       CollisionHandler.detectMissileHit(missileHandler, bbCollection);
       playerBlock.updateFlames();
-      //bbCollection.updateGhosts();
     };
   },
 
@@ -866,7 +903,9 @@ var BoulderBlaster = {
         new BoulderBlaster.PlayerEntity(gameStage, resourceHolder),
         new BoulderBlaster.MissileHandler(gameStage, gameAreaSize),
         new BoulderBlaster.BoulderCollection(gameStage, resourceHolder),
-        new BoulderBlaster.CollisionHandler(gameStage, eh), eh)
+        new BoulderBlaster.CollisionHandler(gameStage, eh), 
+        eh
+        );
      
       createGrid(backgroundStage);
       app.ticker.add(delta => logic.gameLoop(delta));
