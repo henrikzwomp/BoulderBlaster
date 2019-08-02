@@ -5,8 +5,11 @@
  * --Make new boulder placement less random. Incresed chance of new boulder where there is already a lower amount of boulders.--
  * --Some kind of intro in the beginning. --
  * --Add "bottom line" to stage--
- * Implement game over when boulds reach height limit
- * Red blinking background when boulds reach near height limit
+ * Skipp: Implement game over when boulds reach height limit
+ * Skipp: Red blinking background when boulds reach near height limit
+ 
+ * Game over screen
+ * Start screen / Help text
 */
 "use strict";
 
@@ -42,7 +45,7 @@ var BoulderBlaster = {
 
     this.updateBlockGraphicPosition = function(delta = 0, superSpeed = false, effect = null) {
     	let speed = superSpeed ? 8 * this.maxBlockSpeed : this.maxBlockSpeed;
-    	speed += speed + delta;
+    	speed += speed * delta; // Not sure if this is correct.
       var update_mades = 0;
       
       var speedX = 0;
@@ -661,7 +664,7 @@ var BoulderBlaster = {
     };
   }, 
   
-  LoadingBar: function(app, numberOfItemsToLoad, applicationSize) {
+  LoadingBar: function(app, numberOfItemsToLoad, applicationSize) { // ToDo value used for applicationSize is wrong. 
 	  let loadingStage = new PIXI.Container();
 	  let loadingBox;
 	  let loadingBoxBorder;
@@ -716,28 +719,129 @@ var BoulderBlaster = {
 	    return itemCount >= itemsLoaded;
 	  }
 	},
+	
+	OverlayHandler: function(overlayStage, resourceHolder, gameAreaSize) {
+		this.stage = overlayStage;
+		this.size = gameAreaSize;
+		this.rh = resourceHolder;
+		
+		let space_style = new PIXI.TextStyle({
+    		align: "center",
+    		fill: "white",
+    		fontSize: 26, fontWeight: "bold"
+			});
+		
+		
+		let help_style = new PIXI.TextStyle({
+    		align: "center",
+    		fill: "white",
+    		fontSize: 14
+			});
+		
+		this.showMenu = function() {
+			this.stage.removeChildren();
+			
+    	let space_text = new PIXI.Text('Press any key to Start', space_style);
+			let help_text = new PIXI.Text('Press "H" anytime to display help text', help_style);
+			
+			space_text.position.x = this.size / 2 - space_text.width / 2;
+			space_text.position.y = this.size / 2 - space_text.height / 2 - 16;
+			
+			help_text.position.x = this.size / 2 - help_text.width / 2;
+			help_text.position.y = this.size / 2 - help_text.height / 2 + 16;
+			
+			this.stage.addChild(space_text);
+			this.stage.addChild(help_text);
+			
+		}
+		
+		this.clearStage = function() {
+			this.stage.removeChildren();
+		}
+
+		this.showHelp = function() {
+			this.stage.removeChildren();
+			
+			let bgBox = new PIXI.Graphics()
+    	bgBox.beginFill(0x000000);
+    	bgBox.drawRect(0, 0, this.size, this.size);
+    	bgBox.endFill();
+    	bgBox.alpha = 0.5;
+    	this.stage.addChild(bgBox);
+    	
+    	let help_text = new PIXI.Text('This is a turn based game with object to complete a full row of boulder at \n' + 
+    	'the bottom as many times as possible. Fire a laser to shape the boulder\n' + 
+    	'and move around to avoid any collision.\n' + 
+			'\n' + 
+			'Use Left/Right or A/D to move.\n' + 
+			'\n' + 
+			'Use Up/Down or W/D to fire.\n' + 
+			'\n' + 
+			'Press any key to continue', help_style);
+    	
+			help_text.position.x = this.size / 2 - help_text.width / 2;
+			help_text.position.y = this.size / 2 - help_text.height / 2;
+    	
+			this.stage.addChild(help_text);
+			
+		}
+		
+		this.showGameOverScreen = function() {
+			this.stage.removeChildren();
+			
+			let bgBox = new PIXI.Graphics()
+    	bgBox.beginFill(0x000000);
+    	bgBox.drawRect(0, 0, this.size, this.size);
+    	bgBox.endFill();
+    	bgBox.alpha = 0.25;
+    	this.stage.addChild(bgBox);
+    	
+    	let space_text = new PIXI.Text('GAME OVER', space_style);
+    	space_text.position.x = this.size / 2 - space_text.width / 2;
+			space_text.position.y = this.size / 2 - space_text.height / 2 - 16;
+			this.stage.addChild(space_text);
+			
+			let help_text = new PIXI.Text('Press any key to restart', help_style);
+			help_text.position.x = this.size / 2 - help_text.width / 2;
+			help_text.position.y = this.size / 2 - help_text.height / 2 + 16;
+			this.stage.addChild(help_text);
+		}
+	}, 
   
-  GameLogic: function(pixi_app, size, pb, mh, bbc, cc, eh) {
+  GameLogic: function(pixi_app, size, pb, mh, bbc, cc, eh, oh) {
     let gameAreaSize = size;
     let app = pixi_app;
-    var boulderFrequency = 4;
-    var blocksToMove = false;
-    var movesCounter = 0;
-    let runningIntro = false;
+    let boulderFrequency = 4;
+    let blocksToMove = false;
+    let movesCounter = 0;
+    
+    const stateStart = 4;
+    const stateRunningIntro = 1;
+    const stateGameOn = 2;
+    const stateGameOver = 3;
+    let gameState = 0;
+    
+    let showingHelp = false;
 
     let playerBlock = pb;
     let missileHandler = mh;
     let bbCollection = bbc;
     let CollisionHandler = cc;
     let explosionHandler = eh;
+    let overlayHandler = oh;
     
     this.startGame = function() {
-			setGameStage();
+			setMenuStage(this.gameStage);
+    };
+    
+    var setMenuStage = function(gameStage) {
+    	gameState = stateStart;
+			overlayHandler.showMenu();
     };
     
     var setGameStage = function() {
-    	
-    	runningIntro = true;
+    	gameState = stateRunningIntro;
+    	overlayHandler.clearStage(); // ToDo Test?
       bbCollection.clearBoulders();
       playerBlock.removePlayer();// ToDo Test
       
@@ -755,7 +859,26 @@ var BoulderBlaster = {
     };
     
     this.onKeyDown = function (key) {
-      if(key.keyCode === 82) { // R
+    	if(showingHelp === true) // ToDo Test
+    	{
+    		overlayHandler.clearStage();
+    		showingHelp = false;
+    		
+    		if(gameState !== stateStart) {  // ToDo Test
+    			key.preventDefault();
+    			return;
+    		}
+    	}
+    	else if(key.keyCode === 72)// h 72  // ToDo Test
+    	{
+    		overlayHandler.showHelp();
+    		showingHelp = true;
+    		key.preventDefault();
+        return;
+    	}
+    	
+    	// ToDo: Test "any" keypress?
+      if(key.keyCode === 82 || (gameState === stateStart) || (gameState === stateGameOver) ) { // R  (&& key.keyCode === 32 and Space)
         setGameStage();
         key.preventDefault();
         return;
@@ -777,9 +900,12 @@ var BoulderBlaster = {
         bbCollection.moveAllFallingBouldersDown();
         bbCollection.calculateFallingStatusOnBoulders();
         CollisionHandler.detectMissileHit(missileHandler, bbCollection); // A new missile needs to hit adjecten block immediently 
-        if(CollisionHandler.checkPlayerBoulderCollision(playerBlock, bbCollection))
+        if(CollisionHandler.checkPlayerBoulderCollision(playerBlock, bbCollection)) {
           playerBlock.removePlayer();
-
+          gameState = stateGameOver;
+          overlayHandler.showGameOverScreen();
+				}
+				
         // Add new rock
         if (movesCounter >= boulderFrequency) {
           bbCollection.generateBoulderFormation();
@@ -821,13 +947,13 @@ var BoulderBlaster = {
       var changesMade = 0;
     
       if(blocksToMove) {
-        if (playerBlock.isStaged) changesMade =+ playerBlock.updateBlockGraphicPosition(delta, runningIntro, playerBlock.addFlame);
-        bbCollection.boulderBlocks.forEach( function(stoneBlock) {changesMade += stoneBlock.updateBlockGraphicPosition(delta, runningIntro);});
+        if (playerBlock.isStaged) changesMade =+ playerBlock.updateBlockGraphicPosition(delta, (gameState === stateRunningIntro), playerBlock.addFlame);
+        bbCollection.boulderBlocks.forEach( function(stoneBlock) {changesMade += stoneBlock.updateBlockGraphicPosition(delta, (gameState === stateRunningIntro));});
         if(changesMade === 0) blocksToMove = false;
         
         if(blocksToMove === false) {
         	bbCollection.clearBottomRowIfComplete(explosionHandler);
-        	if(runningIntro) { playerBlock.placePlayer(); runningIntro = false; }
+        	if(gameState === stateRunningIntro) { playerBlock.placePlayer(); gameState = stateGameOn; }
       	}
       }
       explosionHandler.moveExplodingBlocks();
@@ -850,6 +976,7 @@ var BoulderBlaster = {
     var backgroundStage;
     var gameStage;
     var foregroundStage;
+    var menuStage;
     
     let resourceHolder = new BoulderBlaster.ResourceHolder();
 
@@ -877,8 +1004,15 @@ var BoulderBlaster = {
       gameStage.x = gameAreaX;
       gameStage.y = gameAreaY;
       
+      menuStage = new PIXI.Container();
+      menuStage.width = gameAreaSize;
+      menuStage.height = gameAreaSize;
+      menuStage.x = gameAreaX;
+      menuStage.y = gameAreaY;
+      
       mainStage.addChild(backgroundStage);
       mainStage.addChild(gameStage);
+      mainStage.addChild(menuStage);
       mainStage.addChild(foregroundStage);
 			
 			let lbar = new BoulderBlaster.LoadingBar(app, 2, gameAreaSize);
@@ -904,7 +1038,8 @@ var BoulderBlaster = {
         new BoulderBlaster.MissileHandler(gameStage, gameAreaSize),
         new BoulderBlaster.BoulderCollection(gameStage, resourceHolder),
         new BoulderBlaster.CollisionHandler(gameStage, eh), 
-        eh
+        eh, 
+        new BoulderBlaster.OverlayHandler(menuStage, resourceHolder, gameAreaSize)
         );
      
       createGrid(backgroundStage);
@@ -941,8 +1076,8 @@ var BoulderBlaster = {
     		.add('boulder_bottom', 'imgs/boulder_bottom.png')
     		.add('boulder_top', 'imgs/boulder_top.png')
     		.add('boulder_left', 'imgs/boulder_left.png')
-    		.add('boulder_right', 'imgs/boulder_right.png');
-
+    		.add('boulder_right', 'imgs/boulder_right.png')
+    		.add('skull', 'imgs/skull.png');
   	};
   	
   	this.getGraphic = function(resourceName) {
@@ -969,6 +1104,9 @@ var BoulderBlaster = {
 			
 			if(resourceName === 'boulder_top')
 				return new PIXI.Sprite(this.resources.boulder_top.texture);
+				
+			if(resourceName === 'skull')
+				return new PIXI.Sprite(this.resources.skull.texture);
 				
 			//return generic graphic? 
   	};
