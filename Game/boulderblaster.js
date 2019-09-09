@@ -873,18 +873,21 @@ var BoulderBlaster = {
   	let topScore = -1;
   	let expiresDate = new Date();
   	expiresDate.setTime(expiresDate.getTime() + (700*24*60*60*1000)); // +700 days
-  	
+    
+    this.cookieName = "BoulderBlaser";
   	
   	this.setTopScore = function (score) {
+      topScore = score;
   		document.cookie = "BoulderBlaser=topScore:" + score + "; expires=" + expiresDate.toUTCString() + ";path=/";
   	}
   	
   	this.getTopScore = function() {
   		if(topScore < 0) {
-  			if(document.cookie.indexOf('topScore:') > 0) {
-  				topScore = document.cookie.substring(
-  					document.cookie.indexOf('topScore:') + 'topScore:'.length, 
-  					document.cookie.indexOf(';') - document.cookie.indexOf('topScore:'));
+        let theCookie = document.cookie + ";";
+  			if(theCookie.indexOf('topScore:') > 0) {
+          topScore = parseInt(theCookie.substring(
+            theCookie.indexOf('topScore:') + 9,
+            theCookie.indexOf(';')), 10);
   			}
   			else {
   				topScore = 0;
