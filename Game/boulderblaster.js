@@ -8,8 +8,14 @@
  * Skipp: Implement game over when boulds reach height limit
  * Skipp: Red blinking background when boulds reach near height limit
  
- * Game over screen
- * Start screen / Help text
+ * --Game over screen--
+ * --Start screen / Help text--
+ * Scoreboard
+ 
+ Known bugs
+ * Quickly shooting two boulders right above ship will result in game over.
+
+
 */
 "use strict";
 
@@ -404,13 +410,15 @@ var BoulderBlaster = {
         }
 
         if(bottomBouldersIndexes.length < this.gridSquares ) // ToDo test
-          return;
+          return false;
 
         for(let i = bottomBouldersIndexes.length-1; i > -1; i--){
           var toDestroy = this.boulderBlocks[bottomBouldersIndexes[i]];
           explosionHandler.placeExplodingBlock(toDestroy.graphic.position.x, toDestroy.graphic.position.y, toDestroy.boulderColor);
           this.removeBoulder(bottomBouldersIndexes[i]);
         }
+        
+        return true; // ToDo Test
     };
     
     this.getColumnProbabilityShares = function() {
@@ -721,53 +729,55 @@ var BoulderBlaster = {
 	},
 	
 	OverlayHandler: function(overlayStage, resourceHolder, gameAreaSize) {
-		this.stage = overlayStage;
-		this.size = gameAreaSize;
-		this.rh = resourceHolder;
+		let stage = overlayStage;
+		let size = gameAreaSize;
+		let rh = resourceHolder;
 		
 		let space_style = new PIXI.TextStyle({
     		align: "center",
     		fill: "white",
-    		fontSize: 26, fontWeight: "bold"
+    		fontSize: 26, fontWeight: "bold", 
+    		fontFamily: "arial, sans-serif"
 			});
 		
 		
 		let help_style = new PIXI.TextStyle({
     		align: "center",
     		fill: "white",
-    		fontSize: 14
+    		fontSize: 14,
+    		fontFamily: "arial, sans-serif"
 			});
 		
 		this.showMenu = function() {
-			this.stage.removeChildren();
+			stage.removeChildren();
 			
     	let space_text = new PIXI.Text('Press any key to Start', space_style);
 			let help_text = new PIXI.Text('Press "H" anytime to display help text', help_style);
 			
-			space_text.position.x = this.size / 2 - space_text.width / 2;
-			space_text.position.y = this.size / 2 - space_text.height / 2 - 16;
+			space_text.position.x = size / 2 - space_text.width / 2;
+			space_text.position.y = size / 2 - space_text.height / 2 - 16;
 			
-			help_text.position.x = this.size / 2 - help_text.width / 2;
-			help_text.position.y = this.size / 2 - help_text.height / 2 + 16;
+			help_text.position.x = size / 2 - help_text.width / 2;
+			help_text.position.y = size / 2 - help_text.height / 2 + 16;
 			
-			this.stage.addChild(space_text);
-			this.stage.addChild(help_text);
+			stage.addChild(space_text);
+			stage.addChild(help_text);
 			
 		}
 		
 		this.clearStage = function() {
-			this.stage.removeChildren();
+			stage.removeChildren();
 		}
 
 		this.showHelp = function() {
-			this.stage.removeChildren();
+			stage.removeChildren();
 			
 			let bgBox = new PIXI.Graphics()
     	bgBox.beginFill(0x000000);
-    	bgBox.drawRect(0, 0, this.size, this.size);
+    	bgBox.drawRect(0, 0, size, size);
     	bgBox.endFill();
     	bgBox.alpha = 0.5;
-    	this.stage.addChild(bgBox);
+    	stage.addChild(bgBox);
     	
     	let help_text = new PIXI.Text('This is a turn based game with object to complete a full row of boulder at \n' + 
     	'the bottom as many times as possible. Fire a laser to shape the boulder\n' + 
@@ -779,36 +789,112 @@ var BoulderBlaster = {
 			'\n' + 
 			'Press any key to continue', help_style);
     	
-			help_text.position.x = this.size / 2 - help_text.width / 2;
-			help_text.position.y = this.size / 2 - help_text.height / 2;
+			help_text.position.x = size / 2 - help_text.width / 2;
+			help_text.position.y = size / 2 - help_text.height / 2;
     	
-			this.stage.addChild(help_text);
+			stage.addChild(help_text);
 			
 		}
 		
 		this.showGameOverScreen = function() {
-			this.stage.removeChildren();
+			stage.removeChildren();
 			
 			let bgBox = new PIXI.Graphics()
     	bgBox.beginFill(0x000000);
-    	bgBox.drawRect(0, 0, this.size, this.size);
+    	bgBox.drawRect(0, 0, size, size);
     	bgBox.endFill();
     	bgBox.alpha = 0.25;
-    	this.stage.addChild(bgBox);
+    	stage.addChild(bgBox);
     	
     	let space_text = new PIXI.Text('GAME OVER', space_style);
-    	space_text.position.x = this.size / 2 - space_text.width / 2;
-			space_text.position.y = this.size / 2 - space_text.height / 2 - 16;
-			this.stage.addChild(space_text);
+    	space_text.position.x = size / 2 - space_text.width / 2;
+			space_text.position.y = size / 2 - space_text.height / 2 - 16;
+			stage.addChild(space_text);
 			
-			let help_text = new PIXI.Text('Press any key to restart', help_style);
-			help_text.position.x = this.size / 2 - help_text.width / 2;
-			help_text.position.y = this.size / 2 - help_text.height / 2 + 16;
-			this.stage.addChild(help_text);
+			let help_text = new PIXI.Text('Press \'space\' to restart', help_style);
+			help_text.position.x = size / 2 - help_text.width / 2;
+			help_text.position.y = size / 2 - help_text.height / 2 + 16;
+			stage.addChild(help_text);
 		}
 	}, 
+	
+	ScoreHandler: function(scoreContainer, ch) {
+		let stage = scoreContainer;
+		let score = 0;
+		let cookieHandler = ch;
+
+		let small_text_style = new PIXI.TextStyle({
+    		align: "center",
+    		fill: "white",
+    		fontSize: 14, 
+    		fontFamily: "monospace"
+			});
+
+		let current_text = new PIXI.Text('Current:', small_text_style);
+		current_text.position.x = 0;
+		current_text.position.y = 0;
+		stage.addChild(current_text);
+		
+		let highest_text = new PIXI.Text('Max:', small_text_style);
+		highest_text.position.x = 0;
+		highest_text.position.y = 20;
+		stage.addChild(highest_text);
+		
+		let score_text = new PIXI.Text(score, small_text_style);
+		score_text.position.x = 70;
+		score_text.position.y = 0;
+		stage.addChild(score_text);
+		
+		let highest_score = new PIXI.Text(cookieHandler.getTopScore(), small_text_style);
+		highest_score.position.x = 70;
+		highest_score.position.y = 20;
+		stage.addChild(highest_score);
+		
+		this.increaseScore = function(amount) {
+			score += amount;
+			score_text.text = score;
+			
+			if(score > cookieHandler.getTopScore()) // ToDo test
+			{
+				cookieHandler.setTopScore(score);
+				highest_score.text = score;
+			}
+				
+		}
+		
+		this.resetScore = function() {
+			score = 0;
+			score_text.text = score;
+		}
+
+	}, 
   
-  GameLogic: function(pixi_app, size, pb, mh, bbc, cc, eh, oh) {
+  CookieHandler: function() { // ToDo Test everything
+  	let topScore = -1;
+  	let expiresDate = new Date();
+  	expiresDate.setTime(expiresDate.getTime() + (700*24*60*60*1000)); // +700 days
+  	
+  	
+  	this.setTopScore = function (score) {
+  		document.cookie = "BoulderBlaser=topScore:" + score + "; expires=" + expiresDate.toUTCString() + ";path=/";
+  	}
+  	
+  	this.getTopScore = function() {
+  		if(topScore < 0) {
+  			if(document.cookie.indexOf('topScore:') > 0) {
+  				topScore = document.cookie.substring(
+  					document.cookie.indexOf('topScore:') + 'topScore:'.length, 
+  					document.cookie.indexOf(';') - document.cookie.indexOf('topScore:'));
+  			}
+  			else {
+  				topScore = 0;
+  			}
+  		}
+  		return topScore;
+  	}
+  }, 
+  
+  GameLogic: function(pixi_app, size, pb, mh, bbc, ch, eh, oh, sh) {
     let gameAreaSize = size;
     let app = pixi_app;
     let boulderFrequency = 4;
@@ -826,9 +912,10 @@ var BoulderBlaster = {
     let playerBlock = pb;
     let missileHandler = mh;
     let bbCollection = bbc;
-    let CollisionHandler = cc;
+    let CollisionHandler = ch;
     let explosionHandler = eh;
     let overlayHandler = oh;
+    let scoreHandler = sh;
     
     this.startGame = function() {
 			setMenuStage(this.gameStage);
@@ -844,6 +931,7 @@ var BoulderBlaster = {
     	overlayHandler.clearStage(); // ToDo Test?
       bbCollection.clearBoulders();
       playerBlock.removePlayer();// ToDo Test
+      scoreHandler.resetScore(); // ToDo Test
       
       let startY = 14;
       while(bbCollection.boulderBlocks.length < 32) {
@@ -878,7 +966,7 @@ var BoulderBlaster = {
     	}
     	
     	// ToDo: Test "any" keypress?
-      if(key.keyCode === 82 || (gameState === stateStart) || (gameState === stateGameOver) ) { // R  (&& key.keyCode === 32 and Space)
+      if(key.keyCode === 82 || (gameState === stateStart) || (key.keyCode === 32 && gameState === stateGameOver) ) { // R  (&& key.keyCode === 32 and Space)
         setGameStage();
         key.preventDefault();
         return;
@@ -952,8 +1040,13 @@ var BoulderBlaster = {
         if(changesMade === 0) blocksToMove = false;
         
         if(blocksToMove === false) {
-        	bbCollection.clearBottomRowIfComplete(explosionHandler);
-        	if(gameState === stateRunningIntro) { playerBlock.placePlayer(); gameState = stateGameOn; }
+        	let boom = bbCollection.clearBottomRowIfComplete(explosionHandler);
+        	if(gameState === stateRunningIntro) { 
+        		playerBlock.placePlayer(); gameState = stateGameOn; 
+        	}
+        	else if(boom) {
+        		scoreHandler.increaseScore(1); // ToDo Test
+        	}
       	}
       }
       explosionHandler.moveExplodingBlocks();
@@ -1027,6 +1120,10 @@ var BoulderBlaster = {
     this.setGameStage = function(loader, resources) {
     	resourceHolder.setResources(resources);
 			foregroundStage.addChild(resourceHolder.getGraphic('console')); // new PIXI.Sprite(resources.console.texture)
+			let scoreboardContainer = new PIXI.Container();
+      scoreboardContainer.position.x = 28;
+      scoreboardContainer.position.y = 596;
+			foregroundStage.addChild(scoreboardContainer);
 
       app.stage = mainStage;
       
@@ -1039,7 +1136,8 @@ var BoulderBlaster = {
         new BoulderBlaster.BoulderCollection(gameStage, resourceHolder),
         new BoulderBlaster.CollisionHandler(gameStage, eh), 
         eh, 
-        new BoulderBlaster.OverlayHandler(menuStage, resourceHolder, gameAreaSize)
+        new BoulderBlaster.OverlayHandler(menuStage, resourceHolder, gameAreaSize), 
+        new BoulderBlaster.ScoreHandler(scoreboardContainer, new BoulderBlaster.CookieHandler)
         );
      
       createGrid(backgroundStage);

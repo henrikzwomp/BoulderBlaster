@@ -25,6 +25,7 @@ describe("PlayerEntity.placePlayer", function () {
         expect(player.isStaged).toBe(true);
     });
 
+    /* Not relevant anymore
     it("Can call placePlayer twice without adding two player graphics.", function() {
         var player = new BoulderBlaster.PlayerEntity(stage, resourceHolder);
 
@@ -37,7 +38,7 @@ describe("PlayerEntity.placePlayer", function () {
         player.placePlayer();
 
         expect(stage.children.length).toBe(1);
-    });
+    });*/
 });
 
 describe("PlayerEntity.removePlayer", function () {
