@@ -549,14 +549,14 @@ var BoulderBlaster = {
       this.gameStage.setChildIndex(flame, 0);
     };
     
-
+      this.removeMissile = function (toDestroy) {
+          this.gameStage.removeChild(toDestroy);
+      };
   }, 
 
-  CollisionHandler: function (stage, exploHandler) {
-    BoulderBlaster.bbBase.call(this, stage);
-    this.explosionHandler = exploHandler;
+    CollisionHandler: function () { // stage, exploHandler
     
-    this.detectMissileHit = function(missileHandler, bbCollection) {
+        this.detectMissileHit = function (missileHandler, bbCollection, explosionHandler) {
       var removeMissilesIndexes = [];
       var removeBouldersIndexes = [];
     
@@ -580,13 +580,12 @@ var BoulderBlaster = {
       for(let i = removeMissilesIndexes.length-1; i > -1; i--){
         var toDestroy = missileHandler.missiles[removeMissilesIndexes[i]];
         missileHandler.missiles.splice(removeMissilesIndexes[i], 1);
-        this.gameStage.removeChild(toDestroy);
-        //if( undefined toDestroy.destroy();
+          missileHandler.removeMissile(toDestroy);
       }
     
       for(let i = removeBouldersIndexes.length-1; i > -1; i--){
         var toDestroy = bbCollection.boulderBlocks[removeBouldersIndexes[i]];
-        this.explosionHandler.placeExplodingBlock(toDestroy.graphic.position.x, toDestroy.graphic.position.y, toDestroy.boulderColor);
+        explosionHandler.placeExplodingBlock(toDestroy.graphic.position.x, toDestroy.graphic.position.y, toDestroy.boulderColor); // TD2 move to game logic
         bbCollection.removeBoulder(removeBouldersIndexes[i]);
       }
     
@@ -596,13 +595,13 @@ var BoulderBlaster = {
       }
     };
     
-    this.checkPlayerBoulderCollision = function(playerBlock, bbCollection) {
+        this.checkPlayerBoulderCollision = function (playerBlock, bbCollection, explosionHandler) {
       var b = bbCollection.boulderBlocks;
     
       for (let i = 0; i < b.length; i++) {
           if (b[i].gridX === playerBlock.gridX &&
             b[i].gridY === playerBlock.gridY) {
-              this.explosionHandler.placeExplodingBlock(playerBlock.graphic.position.x, playerBlock.graphic.position.y
+              explosionHandler.placeExplodingBlock(playerBlock.graphic.position.x, playerBlock.graphic.position.y
                 , playerBlock.playerColor, playerBlock.lastGridXMove * 0.5); 
               return true;
           }
@@ -728,10 +727,9 @@ var BoulderBlaster = {
 	  }
 	},
 	
-	OverlayHandler: function(overlayStage, resourceHolder, gameAreaSize) {
+	OverlayHandler: function(overlayStage, gameAreaSize) {
 		let stage = overlayStage;
 		let size = gameAreaSize;
-		let rh = resourceHolder;
 		
 		let space_style = new PIXI.TextStyle({
     		align: "center",
@@ -897,9 +895,7 @@ var BoulderBlaster = {
   	}
   }, 
   
-  GameLogic: function(pixi_app, size, pb, mh, bbc, ch, eh, oh, sh) {
-    let gameAreaSize = size;
-    let app = pixi_app;
+  GameLogic: function(pb, mh, bbc, ch, eh, oh, sh) {
     let boulderFrequency = 4;
     let blocksToMove = false;
     let movesCounter = 0;
@@ -990,8 +986,8 @@ var BoulderBlaster = {
     
         bbCollection.moveAllFallingBouldersDown();
         bbCollection.calculateFallingStatusOnBoulders();
-        CollisionHandler.detectMissileHit(missileHandler, bbCollection); // A new missile needs to hit adjecten block immediently 
-        if(CollisionHandler.checkPlayerBoulderCollision(playerBlock, bbCollection)) {
+          CollisionHandler.detectMissileHit(missileHandler, bbCollection, explosionHandler); // A new missile needs to hit adjecten block immediently 
+          if (CollisionHandler.checkPlayerBoulderCollision(playerBlock, bbCollection, explosionHandler)) {
           playerBlock.removePlayer();
           gameState = stateGameOver;
           overlayHandler.showGameOverScreen();
@@ -1054,9 +1050,9 @@ var BoulderBlaster = {
       }
       explosionHandler.moveExplodingBlocks();
       missileHandler.moveMissiles();
-      CollisionHandler.detectMissileHit(missileHandler, bbCollection);
+        CollisionHandler.detectMissileHit(missileHandler, bbCollection, explosionHandler);
       playerBlock.updateFlames();
-    };
+      };
   },
 
   Game: function() {
@@ -1130,16 +1126,13 @@ var BoulderBlaster = {
 
       app.stage = mainStage;
       
-      
-      let eh = new BoulderBlaster.ExplosionHandler(gameStage);
-      
-      logic = new BoulderBlaster.GameLogic(app, gameAreaSize, 
+      logic = new BoulderBlaster.GameLogic(
         new BoulderBlaster.PlayerEntity(gameStage, resourceHolder),
         new BoulderBlaster.MissileHandler(gameStage, gameAreaSize),
         new BoulderBlaster.BoulderCollection(gameStage, resourceHolder),
-        new BoulderBlaster.CollisionHandler(gameStage, eh), 
-        eh, 
-        new BoulderBlaster.OverlayHandler(menuStage, resourceHolder, gameAreaSize), 
+        new BoulderBlaster.CollisionHandler(), 
+        new BoulderBlaster.ExplosionHandler(gameStage), 
+        new BoulderBlaster.OverlayHandler(menuStage, gameAreaSize), 
         new BoulderBlaster.ScoreHandler(scoreboardContainer, new BoulderBlaster.CookieHandler)
         );
      
@@ -1194,20 +1187,20 @@ var BoulderBlaster = {
   		if(resourceName === 'boulder')
 				return new PIXI.Sprite(this.resources.boulder.texture);
 		
-			if(resourceName === 'boulder_bottom')
-				return new PIXI.Sprite(this.resources.boulder_bottom.texture);
+		if(resourceName === 'boulder_bottom')
+			return new PIXI.Sprite(this.resources.boulder_bottom.texture);
 			
-			if(resourceName === 'boulder_right')
-				return new PIXI.Sprite(this.resources.boulder_right.texture);
+		if(resourceName === 'boulder_right')
+			return new PIXI.Sprite(this.resources.boulder_right.texture);
 			
-			if(resourceName === 'boulder_left')
-				return new PIXI.Sprite(this.resources.boulder_left.texture);
+		if(resourceName === 'boulder_left')
+			return new PIXI.Sprite(this.resources.boulder_left.texture);
 			
-			if(resourceName === 'boulder_top')
-				return new PIXI.Sprite(this.resources.boulder_top.texture);
+		if(resourceName === 'boulder_top')
+			return new PIXI.Sprite(this.resources.boulder_top.texture);
 				
-			if(resourceName === 'skull')
-				return new PIXI.Sprite(this.resources.skull.texture);
+		if(resourceName === 'skull')
+			return new PIXI.Sprite(this.resources.skull.texture);
 				
 			//return generic graphic? 
   	};
