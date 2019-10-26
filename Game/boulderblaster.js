@@ -1,22 +1,3 @@
-/*
- * __Next__
- * --Auto-explode a full line of boulders :)--
- * --Add background grid--
- * --Make new boulder placement less random. Incresed chance of new boulder where there is already a lower amount of boulders.--
- * --Some kind of intro in the beginning. --
- * --Add "bottom line" to stage--
- * Skipp: Implement game over when boulds reach height limit
- * Skipp: Red blinking background when boulds reach near height limit
- 
- * --Game over screen--
- * --Start screen / Help text--
- * Scoreboard
- 
- Known bugs
- * Quickly shooting two boulders right above ship will result in game over.
-
-
-*/
 "use strict";
 
 var BoulderBlaster = {
@@ -401,7 +382,7 @@ var BoulderBlaster = {
     }
 
 		// ToDo redo boulder edges
-    this.clearBottomRowIfComplete = function(explosionHandler) {
+    this.clearBottomRowIfComplete = function(boulderNeedsToExplodeFunction) {
         let bottomBouldersIndexes = [];
 
         for(let i = 0; i < this.boulderBlocks.length; i++){
@@ -414,7 +395,11 @@ var BoulderBlaster = {
 
         for(let i = bottomBouldersIndexes.length-1; i > -1; i--){
           var toDestroy = this.boulderBlocks[bottomBouldersIndexes[i]];
-          explosionHandler.placeExplodingBlock(toDestroy.graphic.position.x, toDestroy.graphic.position.y, toDestroy.boulderColor);
+          //explosionHandler.placeExplodingBlock(toDestroy.graphic.position.x, toDestroy.graphic.position.y, toDestroy.boulderColor);
+          //document.dispatchEvent(new CustomEvent("bb_boulderNeedsToExplode", { detail: { boulder: toDestroy }}));
+          // ToDo CustomEvent here
+          boulderNeedsToExplodeFunction(toDestroy);
+
           this.removeBoulder(bottomBouldersIndexes[i]);
         }
         
@@ -554,9 +539,9 @@ var BoulderBlaster = {
       };
   }, 
 
-    CollisionHandler: function () { // stage, exploHandler
+  CollisionHandler: function () { 
     
-        this.detectMissileHit = function (missileHandler, bbCollection, explosionHandler) {
+    this.detectMissileHit = function (missileHandler, bbCollection, boulderNeedsToExplodeFunction) {
       var removeMissilesIndexes = [];
       var removeBouldersIndexes = [];
     
@@ -580,12 +565,12 @@ var BoulderBlaster = {
       for(let i = removeMissilesIndexes.length-1; i > -1; i--){
         var toDestroy = missileHandler.missiles[removeMissilesIndexes[i]];
         missileHandler.missiles.splice(removeMissilesIndexes[i], 1);
-          missileHandler.removeMissile(toDestroy);
+        missileHandler.removeMissile(toDestroy);
       }
     
       for(let i = removeBouldersIndexes.length-1; i > -1; i--){
         var toDestroy = bbCollection.boulderBlocks[removeBouldersIndexes[i]];
-        explosionHandler.placeExplodingBlock(toDestroy.graphic.position.x, toDestroy.graphic.position.y, toDestroy.boulderColor); // TD2 move to game logic
+        boulderNeedsToExplodeFunction(toDestroy);
         bbCollection.removeBoulder(removeBouldersIndexes[i]);
       }
     
@@ -595,14 +580,12 @@ var BoulderBlaster = {
       }
     };
     
-        this.checkPlayerBoulderCollision = function (playerBlock, bbCollection, explosionHandler) {
+    this.checkPlayerBoulderCollision = function (playerBlock, bbCollection) {
       var b = bbCollection.boulderBlocks;
     
       for (let i = 0; i < b.length; i++) {
           if (b[i].gridX === playerBlock.gridX &&
             b[i].gridY === playerBlock.gridY) {
-              explosionHandler.placeExplodingBlock(playerBlock.graphic.position.x, playerBlock.graphic.position.y
-                , playerBlock.playerColor, playerBlock.lastGridXMove * 0.5); 
               return true;
           }
       }
@@ -895,7 +878,68 @@ var BoulderBlaster = {
   	}
   }, 
   
-  GameLogic: function(pb, mh, bbc, ch, eh, oh, sh) {
+  SoundHandler: function() {
+    let context = new AudioContext();
+
+    /*
+    ToDo
+    SoundOn
+    SoundOff <- Default
+    */
+
+    this.playMoveSound = function() {
+      let oscillator = createOscillator();
+  
+      oscillator.frequency.value = 49;
+      oscillator.start();
+      oscillator.stop(context.currentTime + 0.2);
+    };
+
+    this.playLaserSound = function() {
+      let oscillator = createOscillator();
+  
+      let start_fq = 250;
+      oscillator.frequency.value = start_fq;
+      for(let i = 1; i < 11; i++){
+        oscillator.frequency.setValueAtTime(
+          start_fq - (10*i), 
+          context.currentTime + 0.01 * i);
+      }
+      oscillator.start(context.currentTime);
+      oscillator.stop(context.currentTime + 0.18);
+    };
+
+    this.playExplosionSound = function() {
+      let oscillator = createOscillator();
+  
+      let start_fq = 59;
+      oscillator.frequency.value = start_fq;
+
+      for(let i = 1; i < 12; i++){
+        oscillator.frequency.setValueAtTime(
+          start_fq - (i * 3), 
+          context.currentTime + (0.01 * i));
+      }
+
+      oscillator.start(context.currentTime);
+      oscillator.stop(context.currentTime + 0.20);
+    };
+
+    function createOscillator() {
+      let oscillator = context.createOscillator();
+      oscillator.type = "square";
+
+      let gain = context.createGain()
+      gain.gain.value = 0.2;
+
+      oscillator.connect(gain);
+      gain.connect(context.destination);
+      
+      return oscillator;
+    };
+  },
+
+  GameLogic: function(pb, mh, bbc, ch, eh, oh, sh, soh) {
     let boulderFrequency = 4;
     let blocksToMove = false;
     let movesCounter = 0;
@@ -915,6 +959,7 @@ var BoulderBlaster = {
     let explosionHandler = eh;
     let overlayHandler = oh;
     let scoreHandler = sh;
+    let soundHandler = soh;
     
     this.startGame = function() {
 			setMenuStage(this.gameStage);
@@ -986,11 +1031,16 @@ var BoulderBlaster = {
     
         bbCollection.moveAllFallingBouldersDown();
         bbCollection.calculateFallingStatusOnBoulders();
-          CollisionHandler.detectMissileHit(missileHandler, bbCollection, explosionHandler); // A new missile needs to hit adjecten block immediently 
-          if (CollisionHandler.checkPlayerBoulderCollision(playerBlock, bbCollection, explosionHandler)) {
-          playerBlock.removePlayer();
-          gameState = stateGameOver;
-          overlayHandler.showGameOverScreen();
+        CollisionHandler.detectMissileHit(missileHandler, bbCollection, this.boulderNeedsToExplode); // A new missile needs to hit adjecten block immediently 
+
+        if (CollisionHandler.checkPlayerBoulderCollision(playerBlock, bbCollection)) {
+            explosionHandler.placeExplodingBlock(playerBlock.graphic.position.x, playerBlock.graphic.position.y
+            , playerBlock.playerColor, playerBlock.lastGridXMove * 0.5); 
+            playerBlock.removePlayer();
+            // ToDo Explosion sound here
+            soundHandler.playExplosionSound();
+            gameState = stateGameOver;
+            overlayHandler.showGameOverScreen();
 				}
 				
         // Add new rock
@@ -1007,6 +1057,8 @@ var BoulderBlaster = {
         if (playerBlock.gridX > 0) {
             playerBlock.gridX--;
             playerBlock.lastGridXMove = -1;
+            // Move sound here
+            soundHandler.playMoveSound();
             return true;
         }
       }
@@ -1014,6 +1066,8 @@ var BoulderBlaster = {
         if (playerBlock.gridX != playerBlock.gridSquares - 1) {
             playerBlock.gridX++;
             playerBlock.lastGridXMove = 1;
+            // Move sound here
+            soundHandler.playMoveSound();
             return true;
         }
       }
@@ -1022,10 +1076,14 @@ var BoulderBlaster = {
     var keyFiresMissle = function (keyCode) {
       if (keyCode === 87 || keyCode === 38) { // W Key is 87, Up arrow is 87
         missileHandler.createMissile(playerBlock.gridX, playerBlock.gridY, -1);
+        // Laser Sound here
+        soundHandler.playLaserSound();
         return true;
       }
       else if (keyCode === 83 || keyCode === 40) { // S Key is 83,  Down arrow is 40
         missileHandler.createMissile(playerBlock.gridX, playerBlock.gridY, 1);
+        // Laser Sound here
+        soundHandler.playLaserSound();
         return true;
       }
     };
@@ -1039,7 +1097,7 @@ var BoulderBlaster = {
         if(changesMade === 0) blocksToMove = false;
         
         if(blocksToMove === false) {
-        	let boom = bbCollection.clearBottomRowIfComplete(explosionHandler);
+        	let boom = bbCollection.clearBottomRowIfComplete(this.boulderNeedsToExplode);
         	if(gameState === stateRunningIntro) { 
         		playerBlock.placePlayer(); gameState = stateGameOn; 
         	}
@@ -1050,9 +1108,16 @@ var BoulderBlaster = {
       }
       explosionHandler.moveExplodingBlocks();
       missileHandler.moveMissiles();
-        CollisionHandler.detectMissileHit(missileHandler, bbCollection, explosionHandler);
+        CollisionHandler.detectMissileHit(missileHandler, bbCollection, this.boulderNeedsToExplode);
       playerBlock.updateFlames();
-      };
+    };
+
+    this.boulderNeedsToExplode = function (toDestroy) {
+      explosionHandler.placeExplodingBlock(toDestroy.graphic.position.x, toDestroy.graphic.position.y, toDestroy.boulderColor);
+      // Explosion Sound here 
+      soundHandler.playExplosionSound();
+    };
+    
   },
 
   Game: function() {
@@ -1133,7 +1198,8 @@ var BoulderBlaster = {
         new BoulderBlaster.CollisionHandler(), 
         new BoulderBlaster.ExplosionHandler(gameStage), 
         new BoulderBlaster.OverlayHandler(menuStage, gameAreaSize), 
-        new BoulderBlaster.ScoreHandler(scoreboardContainer, new BoulderBlaster.CookieHandler)
+        new BoulderBlaster.ScoreHandler(scoreboardContainer, new BoulderBlaster.CookieHandler),
+        new BoulderBlaster.SoundHandler()
         );
      
       createGrid(backgroundStage);
