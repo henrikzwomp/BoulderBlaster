@@ -905,6 +905,7 @@ var BoulderBlaster = {
     };
 
     soundIconContainer.interactive = true;
+    soundIconContainer.hitArea = new PIXI.Circle(16, 16, 16);
     soundIconContainer.click = this.soundOnOff; // Testable?
 
     this.playMoveSound = function () {
