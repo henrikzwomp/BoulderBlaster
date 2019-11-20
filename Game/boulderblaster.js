@@ -888,6 +888,7 @@ var BoulderBlaster = {
     let lastGain;
     let soundOff = true;
     let NotSymbol = new PIXI.Container();
+    let defaultGain = 0.2;
 
     addSoundIcon();
 
@@ -895,8 +896,6 @@ var BoulderBlaster = {
       if (soundOff) {
         soundOff = false;
         NotSymbol.alpha = 0;
-        if (lastGain)
-          lastGain.gain = 0;
       }
       else {
         soundOff = true;
@@ -979,12 +978,54 @@ var BoulderBlaster = {
       oscillator.stop(stopTime);
     };
 
+    this.playIntroSound = function () {
+        if (soundOff) return;
+
+        let oscillator = createOscillator();
+
+        let start_fq = 59;
+        let fq_change = 6;
+        let blipp_lenght = 0.02;
+
+        let blipp_start = getTime();
+
+        for (let i = 1; i < 120; i++) {
+            oscillator.frequency.setValueAtTime(start_fq, blipp_start);
+            lastGain.gain.setValueAtTime(defaultGain, blipp_start);
+            lastGain.gain.setValueAtTime(0, blipp_start + blipp_lenght);
+
+            blipp_start += (blipp_lenght * 2);
+            start_fq += fq_change;
+        }
+
+        oscillator.start(context.currentTime);
+        oscillator.stop(blipp_start);
+      };
+
+      this.stopIntroSoundWithDelay = function () {
+          if (lastGain) {
+              let delay = 0.4;
+
+              lastGain.gain.cancelScheduledValues(lastGain.context.currentTime + delay);
+              lastGain.gain.setValueAtTime(0, lastGain.context.currentTime + delay);
+
+              let start_fq = 61;
+              let end_fq = 30;
+
+              let oscillator = createOscillator();
+              oscillator.frequency.setValueAtTime(start_fq, lastGain.context.currentTime + delay);
+              oscillator.frequency.linearRampToValueAtTime(end_fq, lastGain.context.currentTime + delay + 0.1);
+              oscillator.start(lastGain.context.currentTime + delay);
+              oscillator.stop(lastGain.context.currentTime + delay + 0.1);
+          }
+      };
+
     function createOscillator() {
       let oscillator = context.createOscillator();
       oscillator.type = "square";
 
       lastGain = context.createGain()
-      lastGain.gain.value = 0.2;
+        lastGain.gain.value = defaultGain;
 
       oscillator.connect(lastGain);
       lastGain.connect(context.destination);
@@ -1085,7 +1126,9 @@ var BoulderBlaster = {
         bbCollection.generateBoulderFormation(startY);
         startY -= 4; 
       }
-      
+
+        soundHandler.playIntroSound();
+
      while(bbCollection.boulderBlocks.filter(block => block.isFalling === true).length > 0) {
         bbCollection.moveAllFallingBouldersDown();
         bbCollection.calculateFallingStatusOnBoulders();
@@ -1201,7 +1244,8 @@ var BoulderBlaster = {
         
         if(blocksToMove === false) {
           let boom = bbCollection.clearBottomRowIfComplete(boulderNeedsToExplode);
-          if(gameState === stateRunningIntro) { 
+            if (gameState === stateRunningIntro) { 
+                soundHandler.stopIntroSoundWithDelay();
             playerBlock.placePlayer(); gameState = stateGameOn; 
           }
           else if(boom) {
