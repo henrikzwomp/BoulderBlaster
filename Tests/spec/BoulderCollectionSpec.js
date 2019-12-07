@@ -72,7 +72,8 @@ describe("BoulderCollection.calculateFallingStatusOnBoulders", function () {
 	});
 	
 	it("Can reassign falling status if blocks below are cleared.", function() {
-		let eh = new BoulderBlaster.ExplosionHandler(stage);
+		//let eh = new BoulderBlaster.ExplosionHandler(stage);
+		let mockFunction = function(obj) {};
 		
 		let bc = new BoulderBlaster.BoulderCollection(stage, resourceHolder);
 		bc.gridSquares = 3;
@@ -92,7 +93,7 @@ describe("BoulderCollection.calculateFallingStatusOnBoulders", function () {
 		
 		expect(bc.boulderBlocks.length).toBe(6);
 		
-		bc.clearBottomRowIfComplete(eh);
+		bc.clearBottomRowIfComplete(mockFunction);
 		bc.calculateFallingStatusOnBoulders();
 		
 		expect(bc.boulderBlocks.length).toBe(3);
@@ -211,7 +212,10 @@ describe("BoulderCollection.clearBottomRowIfComplete", function () {
 	});
 
 	it("Can clear bottom row if complete (and place exploding blocks).", function() {
-		let eh = new BoulderBlaster.ExplosionHandler(stage);
+		
+		let mock = {
+      boulderNeedsToExplodeFunction: function(obj) {}
+    };
 
 		let bc = new BoulderBlaster.BoulderCollection(stage, resourceHolder);
 		bc.gridSquares = 3;
@@ -221,11 +225,11 @@ describe("BoulderCollection.clearBottomRowIfComplete", function () {
 		bc.boulderBlocks.push(new BoulderBlaster.BoulderEntity(stage, 1, 2, 1, resourceHolder));
 		bc.boulderBlocks[1].isFalling = false;
 
-		spyOn(eh, "placeExplodingBlock");
+		spyOn(mock, "boulderNeedsToExplodeFunction");
 
 		expect(bc.boulderBlocks.length).toBe(2);
 
-		bc.clearBottomRowIfComplete(eh);
+		bc.clearBottomRowIfComplete(mock.boulderNeedsToExplodeFunction);
 
 		expect(bc.boulderBlocks.length).toBe(2);
 
@@ -234,14 +238,14 @@ describe("BoulderCollection.clearBottomRowIfComplete", function () {
 
 		expect(bc.boulderBlocks.length).toBe(3);
 
-		bc.clearBottomRowIfComplete(eh);
+		bc.clearBottomRowIfComplete(mock.boulderNeedsToExplodeFunction);
 
 		expect(bc.boulderBlocks.length).toBe(0);
-		expect(eh.placeExplodingBlock).toHaveBeenCalled();
+		expect(mock.boulderNeedsToExplodeFunction).toHaveBeenCalled();
 	});
 	
 	it("Will ignore still falling blocks", function() {
-		let eh = new BoulderBlaster.ExplosionHandler(stage);
+		let mockFunction = function(obj) {};
 
 		let bc = new BoulderBlaster.BoulderCollection(stage, resourceHolder);
 		bc.gridSquares = 3;
@@ -255,13 +259,13 @@ describe("BoulderCollection.clearBottomRowIfComplete", function () {
 
 		expect(bc.boulderBlocks.length).toBe(3);
 
-		bc.clearBottomRowIfComplete(eh);
+		bc.clearBottomRowIfComplete(mockFunction);
 
 		expect(bc.boulderBlocks.length).toBe(3);
 		
 		bc.boulderBlocks[2].isFalling = false;
 
-		bc.clearBottomRowIfComplete(eh);
+		bc.clearBottomRowIfComplete(mockFunction);
 
 		expect(bc.boulderBlocks.length).toBe(0);
 	});

@@ -42,4 +42,68 @@ describe("BlockEntity.updateBlockGraphicPosition", function () {
 		expect(block.graphic.position.x).toBe(3 * block.boxSize);
     	expect(block.graphic.position.y).toBe(3 * block.boxSize);
 	});
+	
+	it("Will call effect function if defined", function() {
+		let mock = {
+      effect: function(obj) {}
+    };
+    
+    spyOn(mock, "effect");
+		
+		var block = new BoulderBlaster.BlockEntity(new PIXI.Container(), 2, 2, 0xff00ff, 10);
+		block.gridX = 3;
+		block.gridY = 3;
+		block.maxBlockSpeed = 400;
+				
+		block.updateBlockGraphicPosition(0, false, mock.effect);
+		
+		expect(mock.effect).toHaveBeenCalled();
+		
+	});
+	
+	it("Will use maxBlockSpeed when moveing block", function() {
+		var block = new BoulderBlaster.BlockEntity(new PIXI.Container(), 2, 2, 0xff00ff, 10);
+		block.gridX = 3;
+		block.gridY = 3;
+		block.maxBlockSpeed = 2;
+		
+		expect(block.graphic.position.x).toBe(2 * block.boxSize);
+    	expect(block.graphic.position.y).toBe(2 * block.boxSize);
+		
+		block.updateBlockGraphicPosition();
+		
+		expect(block.graphic.position.x).toBe(2 * block.boxSize + block.maxBlockSpeed);
+    	expect(block.graphic.position.y).toBe(2 * block.boxSize + block.maxBlockSpeed);
+	});
+	
+	it("SuperSpeed will increse movement by 8", function() {
+		var block = new BoulderBlaster.BlockEntity(new PIXI.Container(), 2, 2, 0xff00ff, 10);
+		block.gridX = 3;
+		block.gridY = 3;
+		block.maxBlockSpeed = 2;
+		
+		expect(block.graphic.position.x).toBe(2 * block.boxSize);
+    	expect(block.graphic.position.y).toBe(2 * block.boxSize);
+		
+		block.updateBlockGraphicPosition(0, true);
+		
+		expect(block.graphic.position.x).toBe(2 * block.boxSize + (block.maxBlockSpeed * 8));
+    expect(block.graphic.position.y).toBe(2 * block.boxSize + (block.maxBlockSpeed * 8));
+	});
+	
+	it("Will use Delta value when moveing block", function() {
+		var block = new BoulderBlaster.BlockEntity(new PIXI.Container(), 2, 2, 0xff00ff, 10);
+		block.gridX = 3;
+		block.gridY = 3;
+		block.maxBlockSpeed = 2;
+		
+		expect(block.graphic.position.x).toBe(2 * block.boxSize);
+    	expect(block.graphic.position.y).toBe(2 * block.boxSize);
+		
+		block.updateBlockGraphicPosition(1);
+		
+		expect(block.graphic.position.x).toBe(2 * block.boxSize + (block.maxBlockSpeed * 2));
+    	expect(block.graphic.position.y).toBe(2 * block.boxSize + (block.maxBlockSpeed * 2));
+	});
+
 });

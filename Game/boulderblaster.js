@@ -57,7 +57,7 @@ var BoulderBlaster = {
         update_mades++;
       }
       
-      if(effect) // ToDo Test
+      if(effect)
         effect(this);
     
       return update_mades;
@@ -67,7 +67,7 @@ var BoulderBlaster = {
   PlayerEntity: function(stage, resourceHolder) {
     this.isStaged = false;
     this.playerColor = 0xFFD800;
-    this.flames = [];  // ToDo: Should be rename
+    this.flames = [];
 
     BoulderBlaster.bbBase.call(this, stage);
 
@@ -114,15 +114,14 @@ var BoulderBlaster = {
     }
 
     this.removePlayer = function() {
-      if(this.graphic) {// ToDo Test
+      if(this.graphic) {
         this.graphic.destroy();
         delete this.graphic;
       }
       this.isStaged = false;
     }
 
-    // ToDo position is wrong
-    this.addFlame = function(obj) { // ToDo Test
+    this.addFlame = function(obj) {
       let x1 = obj.lastXPos;
       let x2 = obj.graphic.position.x;
       let y = obj.graphic.position.y;
@@ -130,7 +129,7 @@ var BoulderBlaster = {
       
       let flame = new PIXI.Graphics();
       flame.beginFill(0xc0f0f0);
-      flame.drawRect(0, 0, (x1-x2) * 0.85 , 6);
+      flame.drawRect(0, 0, Math.abs(x1-x2) * 0.85 , 6);
       flame.endFill();
       
       flame.position.y = y + 16 - (flame.height/2);
@@ -139,7 +138,7 @@ var BoulderBlaster = {
         flame.position.x = x2+32;
       }
       else {
-        flame.position.x = x2;
+        flame.position.x = x2 - flame.width;
       }
         
       flame.va = -0.05;
@@ -880,8 +879,6 @@ var BoulderBlaster = {
   }, 
   
   SoundHandler: function (container) {
-    // Todo: Intro noice!!!
-
     let context = new AudioContext();
     let nextTime = 0;
     let soundIconContainer = container;

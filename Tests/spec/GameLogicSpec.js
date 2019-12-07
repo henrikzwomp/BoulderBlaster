@@ -11,6 +11,7 @@ describe("GameLogic.startGame", function () {
 	let resourceHolder;
 	let overlayHandler;
 	let scoreHandler;
+	let soundHandler;
 
 	beforeEach(function () {
 		let gameStage = new PIXI.Container();
@@ -24,13 +25,13 @@ describe("GameLogic.startGame", function () {
 		collisionHandler = new BoulderBlaster.CollisionHandler(gameStage, explosionHandler);
 		overlayHandler = new BoulderBlaster.OverlayHandler(gameStage, resourceHolder, 512);
 		scoreHandler = new BoulderBlaster.ScoreHandler(new PIXI.Container(), new BoulderBlaster.CookieHandler());
-		overlayHandler = new BoulderBlaster.OverlayHandler(gameStage, resourceHolder, 512);
-		scoreHandler = new BoulderBlaster.ScoreHandler(new PIXI.Container(), new BoulderBlaster.CookieHandler());
+		soundHandler = new BoulderBlaster.SoundHandler(new PIXI.Container());
 	});
 	
 	it("Can start the game as expected.", function() {
-		let logic = new BoulderBlaster.GameLogic(app, size, playerBlock, missileHandler, 
-			bbCollection, collisionHandler, explosionHandler, overlayHandler, scoreHandler);
+		let logic = new BoulderBlaster.GameLogic(playerBlock, missileHandler, 
+			bbCollection, collisionHandler, explosionHandler, overlayHandler, 
+			scoreHandler, soundHandler);
 
 		spyOn(playerBlock, "placePlayer").and.callThrough();
 		spyOn(bbCollection, "clearBoulders").and.callThrough();
@@ -65,6 +66,7 @@ describe("GameLogic.onKeyDown", function () {
 	let resourceHolder;
 	let overlayHandler;
 	let scoreHandler;
+	let soundHandler;
 
 	beforeEach(function () {
 		let gameStage = new PIXI.Container();
@@ -78,14 +80,16 @@ describe("GameLogic.onKeyDown", function () {
 		collisionHandler = new BoulderBlaster.CollisionHandler(gameStage, explosionHandler);
 		overlayHandler = new BoulderBlaster.OverlayHandler(gameStage, resourceHolder, 512);
 		scoreHandler = new BoulderBlaster.ScoreHandler(new PIXI.Container(), new BoulderBlaster.CookieHandler());
+		soundHandler = new BoulderBlaster.SoundHandler(new PIXI.Container());
 	});
 	
 	it("Can restart game.", function() {
 
 		let key = {keyCode: 82, preventDefault: function() {}};
 
-		let logic = new BoulderBlaster.GameLogic(app, size, playerBlock, missileHandler, 
-			bbCollection, collisionHandler, explosionHandler, overlayHandler, scoreHandler);
+		let logic = new BoulderBlaster.GameLogic(playerBlock, missileHandler, 
+			bbCollection, collisionHandler, explosionHandler, overlayHandler, 
+			scoreHandler, soundHandler);
 
 		spyOn(playerBlock, "placePlayer").and.callThrough();
 		spyOn(bbCollection, "clearBoulders").and.callThrough();
@@ -107,8 +111,9 @@ describe("GameLogic.onKeyDown", function () {
 	it("Won't move player if player entity is not staged.", function() {
 		let key = {keyCode: 65, preventDefault: function() {}}; // A 
 
-		let logic = new BoulderBlaster.GameLogic(app, size, playerBlock, missileHandler, 
-			bbCollection, collisionHandler, explosionHandler, overlayHandler, scoreHandler);
+		let logic = new BoulderBlaster.GameLogic(playerBlock, missileHandler, 
+			bbCollection, collisionHandler, explosionHandler, overlayHandler, 
+			scoreHandler, soundHandler);
 
 		playerBlock.gridX = 1;
 		playerBlock.lastGridXMove = 0;
@@ -130,8 +135,9 @@ describe("GameLogic.onKeyDown", function () {
 	it("Can move player to the left, but not past the left edge (and will set lastGridXMove).", function() {
 		let key = {keyCode: 65, preventDefault: function() {}}; // A 
 
-		let logic = new BoulderBlaster.GameLogic(app, size, playerBlock, missileHandler, 
-			bbCollection, collisionHandler, explosionHandler, overlayHandler, scoreHandler);
+		let logic = new BoulderBlaster.GameLogic(playerBlock, missileHandler, 
+			bbCollection, collisionHandler, explosionHandler, overlayHandler, 
+			scoreHandler, soundHandler);
 
 		playerBlock.placePlayer();
 		playerBlock.gridX = 1;
@@ -153,8 +159,9 @@ describe("GameLogic.onKeyDown", function () {
 	it("Can move player to the right, but not past the right edge (and will set lastGridXMove).", function() {
 		let key = {keyCode: 68, preventDefault: function() {}}; // A 
 
-		let logic = new BoulderBlaster.GameLogic(app, size, playerBlock, missileHandler, 
-			bbCollection, collisionHandler, explosionHandler, overlayHandler, scoreHandler);
+		let logic = new BoulderBlaster.GameLogic(playerBlock, missileHandler, 
+			bbCollection, collisionHandler, explosionHandler, overlayHandler, 
+			scoreHandler, soundHandler);
 
 		playerBlock.placePlayer();
 		playerBlock.gridX = playerBlock.gridSquares-2;
@@ -196,8 +203,9 @@ describe("GameLogic.onKeyDown", function () {
 	it("Can shoot missile up.", function() {
 		let key = {keyCode: 87, preventDefault: function() {}}; // W
 
-		let logic = new BoulderBlaster.GameLogic(app, size, playerBlock, missileHandler, 
-			bbCollection, collisionHandler, explosionHandler, overlayHandler, scoreHandler);
+		let logic = new BoulderBlaster.GameLogic(playerBlock, missileHandler, 
+			bbCollection, collisionHandler, explosionHandler, overlayHandler, 
+			scoreHandler, soundHandler);
 
 		playerBlock.placePlayer();
 		
@@ -212,8 +220,9 @@ describe("GameLogic.onKeyDown", function () {
 	it("Can shoot missile down.", function() {
 		let key = {keyCode: 83, preventDefault: function() {}}; // S
 
-		let logic = new BoulderBlaster.GameLogic(app, size, playerBlock, missileHandler, 
-			bbCollection, collisionHandler, explosionHandler, overlayHandler, scoreHandler);
+		let logic = new BoulderBlaster.GameLogic(playerBlock, missileHandler, 
+			bbCollection, collisionHandler, explosionHandler, overlayHandler, 
+			scoreHandler, soundHandler);
 
 		playerBlock.placePlayer();
 		
@@ -228,8 +237,9 @@ describe("GameLogic.onKeyDown", function () {
 	it("Will work on moving boulder and check collisions when player action is made.", function() {
 		let key = {keyCode: 83, preventDefault: function() {}}; // S
 
-		let logic = new BoulderBlaster.GameLogic(app, size, playerBlock, missileHandler, 
-			bbCollection, collisionHandler, explosionHandler, overlayHandler, scoreHandler);
+		let logic = new BoulderBlaster.GameLogic(playerBlock, missileHandler, 
+			bbCollection, collisionHandler, explosionHandler, overlayHandler, 
+			scoreHandler, soundHandler);
 
 		playerBlock.placePlayer();
 		
@@ -249,8 +259,9 @@ describe("GameLogic.onKeyDown", function () {
 	it("Will generate new Boulders as player moves.", function() {
 		let key = {keyCode: 83, preventDefault: function() {}}; // A 
 
-		let logic = new BoulderBlaster.GameLogic(app, size, playerBlock, missileHandler, 
-			bbCollection, collisionHandler, explosionHandler, overlayHandler, scoreHandler);
+		let logic = new BoulderBlaster.GameLogic(playerBlock, missileHandler, 
+			bbCollection, collisionHandler, explosionHandler, overlayHandler, 
+			scoreHandler, soundHandler);
 
 		playerBlock.placePlayer();
 		
@@ -278,6 +289,7 @@ describe("GameLogic.gameLoop", function () {
 	let resourceHolder;
 	let overlayHandler;
 	let scoreHandler;
+	let soundHandler;
 
 	beforeEach(function () {
 		let gameStage = new PIXI.Container();
@@ -291,6 +303,7 @@ describe("GameLogic.gameLoop", function () {
 		collisionHandler = new BoulderBlaster.CollisionHandler(gameStage, explosionHandler);
 		overlayHandler = new BoulderBlaster.OverlayHandler(gameStage, resourceHolder, 512);
 		scoreHandler = new BoulderBlaster.ScoreHandler(new PIXI.Container(), new BoulderBlaster.CookieHandler());
+		soundHandler = new BoulderBlaster.SoundHandler(new PIXI.Container());
 	});
 	
 	afterEach(function () {
@@ -299,11 +312,13 @@ describe("GameLogic.gameLoop", function () {
     bbCollection = undefined;
     collisionHandler = undefined;
     explosionHandler = undefined;
+    soundHandler = undefined;
 	}) 
 	
 	it("Will move explosions & missiles and detect missile hits.", function() {
-		let logic = new BoulderBlaster.GameLogic(app, size, playerBlock, missileHandler, 
-			bbCollection, collisionHandler, explosionHandler, overlayHandler, scoreHandler);
+		let logic = new BoulderBlaster.GameLogic(playerBlock, missileHandler, 
+			bbCollection, collisionHandler, explosionHandler, overlayHandler, 
+			scoreHandler, soundHandler);
 
 		playerBlock.placePlayer();
 		
@@ -319,8 +334,9 @@ describe("GameLogic.gameLoop", function () {
 	});
 
 	it("Will update block positions if needed.", function() {
-		let logic = new BoulderBlaster.GameLogic(app, size, playerBlock, missileHandler, 
-			bbCollection, collisionHandler, explosionHandler, overlayHandler, scoreHandler);
+		let logic = new BoulderBlaster.GameLogic(playerBlock, missileHandler, 
+			bbCollection, collisionHandler, explosionHandler, overlayHandler, 
+			scoreHandler, soundHandler);
 
 		let key = {keyCode: 65, preventDefault: function() {}}; // A 
 
@@ -338,8 +354,9 @@ describe("GameLogic.gameLoop", function () {
 	});
 
 	it("Can explode bottom row if complete.", function() {
-		let logic = new BoulderBlaster.GameLogic(app, size, playerBlock, missileHandler, 
-			bbCollection, collisionHandler, explosionHandler, overlayHandler, scoreHandler);
+		let logic = new BoulderBlaster.GameLogic(playerBlock, missileHandler, 
+			bbCollection, collisionHandler, explosionHandler, overlayHandler, 
+			scoreHandler, soundHandler);
 
 		let key = {keyCode: 65, preventDefault: function() {}}; // A 
 
