@@ -37,6 +37,9 @@ describe("GameLogic.startGame", function () {
 		spyOn(bbCollection, "clearBoulders").and.callThrough();
 		spyOn(bbCollection, "generateBoulderFormation").and.callThrough();
 		spyOn(bbCollection, "calculateFallingStatusOnBoulders").and.callThrough();
+		spyOn(overlayHandler, "clearStage").and.callThrough();
+		spyOn(playerBlock, "removePlayer").and.callThrough();
+		spyOn(scoreHandler, "resetScore").and.callThrough();
 
 		let key = {keyCode: 82, preventDefault: function() {}};
 
@@ -46,12 +49,14 @@ describe("GameLogic.startGame", function () {
 		{
 			logic.gameLoop(0);
 		}
-			
 
 		expect(playerBlock.placePlayer).toHaveBeenCalled();
 		expect(bbCollection.clearBoulders).toHaveBeenCalled();
 		expect(bbCollection.generateBoulderFormation).toHaveBeenCalled();
 		expect(bbCollection.calculateFallingStatusOnBoulders).toHaveBeenCalled();
+		expect(overlayHandler.clearStage).toHaveBeenCalled();
+		expect(playerBlock.removePlayer).toHaveBeenCalled();
+		expect(scoreHandler.resetScore).toHaveBeenCalled();
 	});
 });
 
@@ -276,6 +281,10 @@ describe("GameLogic.onKeyDown", function () {
 
 		expect(bbCollection.generateBoulderFormation).toHaveBeenCalled();
 	});
+
+	// Sound on off
+	// Show help on off
+	// Reset 
 });
 
 describe("GameLogic.gameLoop", function () {

@@ -171,7 +171,27 @@ describe("BoulderCollection.regroupBoulderFormation", function () {
 		expect(boulder11.groupId).not.toBe(boulder21.groupId);
 		expect(boulder11.groupId).toBe(boulder12.groupId);
 		expect(boulder21.groupId).toBe(boulder22.groupId);
+	});
 
+	it("Will call setBoulderGroupBorders.", function() {
+		let bc = new BoulderBlaster.BoulderCollection(stage, resourceHolder);
+		bc.boulderFormationIdCount = 4;
+
+		let boulder11 = new BoulderBlaster.BoulderEntity(stage, 0, 0, 1, resourceHolder);
+		bc.boulderBlocks.push(boulder11);
+		let boulder12 = new BoulderBlaster.BoulderEntity(stage, 0, 1, 1, resourceHolder)
+		bc.boulderBlocks.push(boulder12);
+
+		let boulder21 = new BoulderBlaster.BoulderEntity(stage, 2, 1, 1, resourceHolder)
+		bc.boulderBlocks.push(boulder21);
+		let boulder22 = new BoulderBlaster.BoulderEntity(stage, 2, 2, 1, resourceHolder)
+		bc.boulderBlocks.push(boulder22);
+
+		spyOn(bc, "setBoulderGroupBorders");
+
+		bc.regroupBoulderFormation(1);
+
+		expect(bc.setBoulderGroupBorders).toHaveBeenCalled();
 	});
 });
 
@@ -211,7 +231,7 @@ describe("BoulderCollection.clearBottomRowIfComplete", function () {
 			resourceHolder = new BoulderBlaster.ResourceHolder();
 	});
 
-	it("Can clear bottom row if complete (and place exploding blocks).", function() {
+	it("Can clear bottom row if complete.", function() {
 		
 		let mock = {
       boulderNeedsToExplodeFunction: function(obj) {}
@@ -224,8 +244,6 @@ describe("BoulderCollection.clearBottomRowIfComplete", function () {
 		bc.boulderBlocks[0].isFalling = false;
 		bc.boulderBlocks.push(new BoulderBlaster.BoulderEntity(stage, 1, 2, 1, resourceHolder));
 		bc.boulderBlocks[1].isFalling = false;
-
-		spyOn(mock, "boulderNeedsToExplodeFunction");
 
 		expect(bc.boulderBlocks.length).toBe(2);
 
@@ -241,7 +259,60 @@ describe("BoulderCollection.clearBottomRowIfComplete", function () {
 		bc.clearBottomRowIfComplete(mock.boulderNeedsToExplodeFunction);
 
 		expect(bc.boulderBlocks.length).toBe(0);
+	});
+
+	it("Will call given boulderNeedsToExplodeFunction argument.", function() {
+		
+		let mock = {
+      boulderNeedsToExplodeFunction: function(obj) {}
+    };
+
+		let bc = new BoulderBlaster.BoulderCollection(stage, resourceHolder);
+		bc.gridSquares = 3;
+
+		bc.boulderBlocks.push(new BoulderBlaster.BoulderEntity(stage, 0, 2, 1, resourceHolder));
+		bc.boulderBlocks[0].isFalling = false;
+		bc.boulderBlocks.push(new BoulderBlaster.BoulderEntity(stage, 1, 2, 1, resourceHolder));
+		bc.boulderBlocks[1].isFalling = false;
+
+		spyOn(mock, "boulderNeedsToExplodeFunction");
+
+		bc.clearBottomRowIfComplete(mock.boulderNeedsToExplodeFunction);
+
+		expect(mock.boulderNeedsToExplodeFunction).not.toHaveBeenCalled();
+
+		bc.boulderBlocks.push(new BoulderBlaster.BoulderEntity(stage, 2, 2, 1, resourceHolder));
+		bc.boulderBlocks[2].isFalling = false;
+
+		bc.clearBottomRowIfComplete(mock.boulderNeedsToExplodeFunction);
+
 		expect(mock.boulderNeedsToExplodeFunction).toHaveBeenCalled();
+	});
+
+	it("Will return correct bool value.", function() {
+		
+		let mock = {
+      boulderNeedsToExplodeFunction: function(obj) {}
+    };
+
+		let bc = new BoulderBlaster.BoulderCollection(stage, resourceHolder);
+		bc.gridSquares = 3;
+
+		bc.boulderBlocks.push(new BoulderBlaster.BoulderEntity(stage, 0, 2, 1, resourceHolder));
+		bc.boulderBlocks[0].isFalling = false;
+		bc.boulderBlocks.push(new BoulderBlaster.BoulderEntity(stage, 1, 2, 1, resourceHolder));
+		bc.boulderBlocks[1].isFalling = false;
+
+		let result = bc.clearBottomRowIfComplete(mock.boulderNeedsToExplodeFunction);
+
+		expect(result).toBe(false);
+
+		bc.boulderBlocks.push(new BoulderBlaster.BoulderEntity(stage, 2, 2, 1, resourceHolder));
+		bc.boulderBlocks[2].isFalling = false;
+
+		result = bc.clearBottomRowIfComplete(mock.boulderNeedsToExplodeFunction);
+
+		expect(result).toBe(true);
 	});
 	
 	it("Will ignore still falling blocks", function() {
@@ -272,11 +343,6 @@ describe("BoulderCollection.clearBottomRowIfComplete", function () {
 
 });
 
-/*
-Input 0	2	2	3	4	2	0	0	0	1	2	4	3	3	2	3
-Output: 0,102	0,061	0,061	0,041	0,020	0,061	0,102	0,102	0,102	0,082	0,061	0,020	0,041	0,041	0,061	0,041
-
-*/
 describe("BoulderCollection.getColumnProbabilityShares", function () {
 	let stage;
 	let resourceHolder;
@@ -290,6 +356,10 @@ describe("BoulderCollection.getColumnProbabilityShares", function () {
 		let bc = new BoulderBlaster.BoulderCollection(stage, resourceHolder);
 		
 		bc.gridSquares = 16;
+		/*
+		Input 0	2	2	3	4	2	0	0	0	1	2	4	3	3	2	3
+		Output: 0,102	0,061	0,061	0,041	0,020	0,061	0,102	0,102	0,102	0,082	0,061	0,020	0,041	0,041	0,061	0,041
+		*/
 		let blouderCount = [0,2,2,3,4,2,0,0,0,1,2,4,3,3,2,3];
 		//bc.boulderBlocks.push(new BoulderBlaster.BoulderEntity(stage, 1, 1, 1, resourceHolder);
 		
@@ -348,4 +418,55 @@ describe("BoulderCollection.getColumnProbabilityShares", function () {
 		expect(result[14]).toBeCloseTo(0.063, 2);
 		expect(result[15]).toBeCloseTo(0.063, 2);
 	});
+});
+
+describe("BoulderCollection.setBoulderGroupBorders", function () {
+	let stage;
+	let resourceHolder;
+	
+	beforeEach(function () {
+			stage = new PIXI.Container();
+			resourceHolder = new BoulderBlaster.ResourceHolder();
+  	});
+
+	it("Will call setEdges correctly.", function() {
+		let bc = new BoulderBlaster.BoulderCollection(stage, resourceHolder);
+
+		let middleBoulder = new BoulderBlaster.BoulderEntity(stage, 2, 2, 1, resourceHolder)
+		spyOn(middleBoulder, "setEdges");
+		bc.boulderBlocks.push(middleBoulder);
+
+		bc.setBoulderGroupBorders(1);
+
+		expect(middleBoulder.setEdges).toHaveBeenCalledWith(true, true, true, true);
+		
+		bc.boulderBlocks.push(new BoulderBlaster.BoulderEntity(stage, 2, 1, 1, resourceHolder));
+
+		bc.setBoulderGroupBorders(1);
+
+		expect(middleBoulder.setEdges).toHaveBeenCalledWith(false, true, true, true);
+
+		bc.boulderBlocks.push(new BoulderBlaster.BoulderEntity(stage, 1, 2, 1, resourceHolder));
+
+		bc.setBoulderGroupBorders(1);
+
+		expect(middleBoulder.setEdges).toHaveBeenCalledWith(false, false, true, true);
+		
+		
+		bc.boulderBlocks.push(new BoulderBlaster.BoulderEntity(stage, 3, 2, 1, resourceHolder));
+
+		bc.setBoulderGroupBorders(1);
+
+		expect(middleBoulder.setEdges).toHaveBeenCalledWith(false, false, true, false);
+
+		bc.boulderBlocks.push(new BoulderBlaster.BoulderEntity(stage, 2, 3, 1, resourceHolder));
+
+		bc.setBoulderGroupBorders(1);
+
+		expect(middleBoulder.setEdges).toHaveBeenCalledWith(false, false, false, false);
+
+		
+
+	});
+
 });

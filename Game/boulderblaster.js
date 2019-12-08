@@ -175,26 +175,24 @@ var BoulderBlaster = {
     this.boulderColor = 0x808080;
     
     let boulderEntity = new PIXI.Container();
-    boulderEntity.addChild(resourceHolder.getGraphic('boulder')); // new PIXI.Sprite(resources.boulder.texture)
+    boulderEntity.addChild(resourceHolder.getGraphic('boulder')); 
     
     BoulderBlaster.BlockEntity.call(this, stage, x, y, this.boulderColor, group_id, boulderEntity);
     
-    // ToDo Test
     this.setEdges = function(top, left, bottom, right) {
       if(this.graphic && this.graphic.children && this.graphic.children.length > 1) {
         this.graphic.removeChildren();
-        this.graphic.addChild(resourceHolder.getGraphic('boulder')); // new PIXI.Sprite(resources.boulder.texture)
+        this.graphic.addChild(resourceHolder.getGraphic('boulder')); 
       }
       
       if(bottom)
-        this.graphic.addChild(resourceHolder.getGraphic('boulder_bottom')); // new PIXI.Sprite(resources.boulder_bottom.texture)
+        this.graphic.addChild(resourceHolder.getGraphic('boulder_bottom')); 
       if(right)
-        this.graphic.addChild(resourceHolder.getGraphic('boulder_right')); // new PIXI.Sprite(resources.boulder_right.texture)
+        this.graphic.addChild(resourceHolder.getGraphic('boulder_right')); 
       if(left)
-        this.graphic.addChild(resourceHolder.getGraphic('boulder_left')); // new PIXI.Sprite(resources.boulder_left.texture)
+        this.graphic.addChild(resourceHolder.getGraphic('boulder_left')); 
       if(top)
-        this.graphic.addChild(resourceHolder.getGraphic('boulder_top')); // new PIXI.Sprite(resources.boulder_top.texture)
-        
+        this.graphic.addChild(resourceHolder.getGraphic('boulder_top'));
     }
   }, 
 
@@ -210,7 +208,6 @@ var BoulderBlaster = {
       var right_made = false;
       var bottom_made = false;
       
-      // ToDo break out to own function
       var start_x = 0;
       var propShares = this.getColumnProbabilityShares();
       var propSum = 0;
@@ -363,8 +360,7 @@ var BoulderBlaster = {
           }
         }
       }
-      
-      // ToDo Test
+
       for(let i = startCount; i < this.boulderFormationIdCount; i++)
         this.setBoulderGroupBorders(i+1);
     };
@@ -380,7 +376,6 @@ var BoulderBlaster = {
       this.boulderBlocks.splice(index, 1);
     }
 
-    // ToDo redo boulder edges
     this.clearBottomRowIfComplete = function(boulderNeedsToExplodeFunction) {
         let bottomBouldersIndexes = [];
 
@@ -389,20 +384,16 @@ var BoulderBlaster = {
             bottomBouldersIndexes.push(i);
         }
 
-        if(bottomBouldersIndexes.length < this.gridSquares ) // ToDo test
+        if(bottomBouldersIndexes.length < this.gridSquares )
           return false;
 
         for(let i = bottomBouldersIndexes.length-1; i > -1; i--){
           var toDestroy = this.boulderBlocks[bottomBouldersIndexes[i]];
-          //explosionHandler.placeExplodingBlock(toDestroy.graphic.position.x, toDestroy.graphic.position.y, toDestroy.boulderColor);
-          //document.dispatchEvent(new CustomEvent("bb_boulderNeedsToExplode", { detail: { boulder: toDestroy }}));
-          // ToDo CustomEvent here
           boulderNeedsToExplodeFunction(toDestroy);
-
           this.removeBoulder(bottomBouldersIndexes[i]);
         }
         
-        return true; // ToDo Test
+        return true;
     };
     
     this.getColumnProbabilityShares = function() {
@@ -440,13 +431,12 @@ var BoulderBlaster = {
       return column;
     }
     
-    // ToDo Test
     this.setBoulderGroupBorders = function(groupId) {
       this.boulderBlocks.forEach(function(boulder, i, bbArray) {
         if(boulder.groupId != groupId)
           return;
         
-        let top, right, bottom, left;
+        let top = false, right = false, bottom = false, left = false;
         
         if(bbArray.filter(block => block.groupId === groupId && block.gridX == boulder.gridX && block.gridY == (boulder.gridY - 1)).length === 0)
           top = true;
@@ -653,7 +643,7 @@ var BoulderBlaster = {
     };
   }, 
   
-  LoadingBar: function(app, numberOfItemsToLoad, applicationSize) { // ToDo value used for applicationSize is wrong. 
+  LoadingBar: function(app, numberOfItemsToLoad, applicationSize) {
     let loadingStage = new PIXI.Container();
     let loadingBox;
     let loadingBoxBorder;
@@ -835,7 +825,7 @@ var BoulderBlaster = {
       score += amount;
       score_text.text = score;
       
-      if(score > cookieHandler.getTopScore()) // ToDo test
+      if(score > cookieHandler.getTopScore())
       {
         cookieHandler.setTopScore(score);
         highest_score.text = score;
@@ -850,7 +840,7 @@ var BoulderBlaster = {
 
   }, 
   
-  CookieHandler: function() { // ToDo Test everything
+  CookieHandler: function() {
     let topScore = -1;
     let expiresDate = new Date();
     expiresDate.setTime(expiresDate.getTime() + (700*24*60*60*1000)); // +700 days
@@ -997,9 +987,9 @@ var BoulderBlaster = {
 
         oscillator.start(context.currentTime);
         oscillator.stop(blipp_start);
-      };
+    };
 
-      this.stopIntroSoundWithDelay = function () {
+    this.stopIntroSoundWithDelay = function () {
           if (lastGain) {
               let delay = 0.4;
 
@@ -1015,7 +1005,7 @@ var BoulderBlaster = {
               oscillator.start(lastGain.context.currentTime + delay);
               oscillator.stop(lastGain.context.currentTime + delay + 0.1);
           }
-      };
+    };
 
     function createOscillator() {
       let oscillator = context.createOscillator();
@@ -1113,10 +1103,10 @@ var BoulderBlaster = {
     
     var setGameStage = function() {
       gameState = stateRunningIntro;
-      overlayHandler.clearStage(); // ToDo Test?
+      overlayHandler.clearStage();
       bbCollection.clearBoulders();
-      playerBlock.removePlayer();// ToDo Test
-      scoreHandler.resetScore(); // ToDo Test
+      playerBlock.removePlayer();
+      scoreHandler.resetScore();
       
       let startY = 14;
       while(bbCollection.boulderBlocks.length < 32) {
@@ -1255,9 +1245,6 @@ var BoulderBlaster = {
         CollisionHandler.detectMissileHit(missileHandler, bbCollection, boulderNeedsToExplode);
       playerBlock.updateFlames();
     };
-
-    
-    
   },
 
   Game: function() {
@@ -1312,7 +1299,7 @@ var BoulderBlaster = {
       mainStage.addChild(menuStage);
       mainStage.addChild(foregroundStage);
       
-      let lbar = new BoulderBlaster.LoadingBar(app, 2, gameAreaSize);
+      let lbar = new BoulderBlaster.LoadingBar(app, 2, 576);
 
       let loader = new PIXI.Loader();
       resourceHolder.configureLoader(loader);
@@ -1353,7 +1340,6 @@ var BoulderBlaster = {
       logic.startGame();
     };
     
-    // ToDo Refactor
     function createGrid(stage) {
       let size = 32;
       
