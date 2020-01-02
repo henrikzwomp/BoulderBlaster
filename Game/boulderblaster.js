@@ -172,7 +172,8 @@ var BoulderBlaster = {
   },
 
   BoulderEntity: function (stage, x, y, group_id, resourceHolder) {
-    this.boulderColor = 0x808080;
+      this.boulderColor = 0x808080;
+      this.missileTargeted = false; // ToDo Test 2
     
     let boulderEntity = new PIXI.Container();
     boulderEntity.addChild(resourceHolder.getGraphic('boulder')); 
@@ -256,7 +257,21 @@ var BoulderBlaster = {
       if((bottom_made || right_made) && (start_x+1) < this.gridSquares && Math.random() > trigger) 
         this.boulderBlocks.push(new BoulderBlaster.BoulderEntity(this.gameStage, start_x+1, start_y+1, this.boulderFormationIdCount, resources));
         
-      this.setBoulderGroupBorders(this.boulderFormationIdCount);
+        this.setBoulderGroupBorders(this.boulderFormationIdCount);
+
+        // ToDo Test 3
+        // Check for overlapping boulders 
+        var gridMatrix = new Array(this.gridSquares);
+        for (let i = 0; i < gridMatrix.length; i++) {
+            gridMatrix[i] = new Array(this.gridSquares);
+        }
+
+        for (let i = 0; i < this.boulderBlocks.length; i++) {
+            if (gridMatrix[this.boulderBlocks[i].gridX][this.boulderBlocks[i].gridY] == undefined)
+                gridMatrix[this.boulderBlocks[i].gridX][this.boulderBlocks[i].gridY] = i;
+            else if (gridMatrix[this.boulderBlocks[i].gridX][this.boulderBlocks[i].gridY] > 0)
+                this.removeBoulder(i);
+        }
     };
 
     this.calculateFallingStatusOnBoulders = function() {
@@ -371,7 +386,6 @@ var BoulderBlaster = {
     };
 
     this.removeBoulder = function(index) {
-      //this.boulderBlocks[index].graphic.destroy();
       this.gameStage.removeChild(this.boulderBlocks[index].graphic);
       this.boulderBlocks.splice(index, 1);
     }
@@ -452,7 +466,36 @@ var BoulderBlaster = {
           
         boulder.setEdges(top, left, bottom, right);
       });
-    }
+      }
+
+      this.preMissileTargetBoulder = function (gridX, gridY, direction) { // ToDo Test 2
+          // Only direction -1 supported
+
+          let possibleTargets = [this.gridSquares];
+
+          this.boulderBlocks.forEach(function (block) {
+              if (block.gridX == gridX && (
+                  //(direction == 1 && block.gridY > gridY) ||
+                  (direction == -1 && block.gridY < gridY)
+              )) {
+                  possibleTargets[block.gridY] = block;
+              }
+          });
+
+          if(possibleTargets.length == 0)
+              return;
+
+          for (let i = gridX; i > 0; i += direction) {
+              if (possibleTargets[i] == undefined)
+                  continue;
+
+              if (possibleTargets[i].missileTargeted === true)
+                  continue;
+
+              possibleTargets[i].missileTargeted = true;
+          }
+      }
+
   }, 
 
   MissileHandler: function(stage, appSize) {
@@ -574,7 +617,8 @@ var BoulderBlaster = {
     
       for (let i = 0; i < b.length; i++) {
           if (b[i].gridX === playerBlock.gridX &&
-            b[i].gridY === playerBlock.gridY) {
+              b[i].gridY === playerBlock.gridY &&
+              b[i].missileTargeted == false ) { // ToDo Test 2
               return true;
           }
       }
@@ -757,7 +801,7 @@ var BoulderBlaster = {
       '\n' + 
       'Use Up/Down or W/D to fire\n' + 
       '\n' + 
-      'Press N to toggle Noice' +
+      'Press N to toggle Noise' +
       '\n' + 
       'Press any key to continue', help_style);
       
@@ -990,6 +1034,8 @@ var BoulderBlaster = {
     };
 
     this.stopIntroSoundWithDelay = function () {
+          if (soundOff) return;
+          
           if (lastGain) {
               let delay = 0.4;
 
@@ -1085,7 +1131,9 @@ var BoulderBlaster = {
     let explosionHandler = eh;
     let overlayHandler = oh;
     let scoreHandler = sh;
-    let soundHandler = soh;
+      let soundHandler = soh;
+
+      let keyDown = false;
     
     let boulderNeedsToExplode = function (toDestroy) {
       explosionHandler.placeExplodingBlock(toDestroy.graphic.position.x, toDestroy.graphic.position.y, toDestroy.boulderColor);
@@ -1122,8 +1170,16 @@ var BoulderBlaster = {
       }
       blocksToMove = true;
     };
-    
-    this.onKeyDown = function (key) {
+
+      this.onKeyUp = function (key) { // ToDo Test 3
+          keyDown = false;
+      }
+
+      this.onKeyDown = function (key) {
+          if (keyDown === true) // ToDo Test 3
+              return;
+          keyDown = true;
+
       if (key.keyCode == 78) { // ToDo Test
         soundHandler.soundOnOff();
         return;
@@ -1210,12 +1266,13 @@ var BoulderBlaster = {
     
     var keyFiresMissle = function (keyCode) {
       if (keyCode === 87 || keyCode === 38) { // W Key is 87, Up arrow is 87
-        missileHandler.createMissile(playerBlock.gridX, playerBlock.gridY, -1);
+          missileHandler.createMissile(playerBlock.gridX, playerBlock.gridY, -1);
+          bbCollection.preMissileTargetBoulder(playerBlock.gridX, playerBlock.gridY, -1); // ToDo Test 2
         soundHandler.playLaserSound();
         return true;
       }
       else if (keyCode === 83 || keyCode === 40) { // S Key is 83,  Down arrow is 40
-        missileHandler.createMissile(playerBlock.gridX, playerBlock.gridY, 1);
+          missileHandler.createMissile(playerBlock.gridX, playerBlock.gridY, 1);
         soundHandler.playLaserSound();
         return true;
       }
@@ -1336,7 +1393,8 @@ var BoulderBlaster = {
      
       createGrid(backgroundStage);
       app.ticker.add(delta => logic.gameLoop(delta));
-      doc.addEventListener('keydown', logic.onKeyDown);
+        doc.addEventListener('keydown', logic.onKeyDown);
+        doc.addEventListener('keyup', logic.onKeyUp);
       logic.startGame();
     };
     
