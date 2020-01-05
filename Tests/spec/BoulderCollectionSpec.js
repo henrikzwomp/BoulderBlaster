@@ -38,6 +38,19 @@ describe("BoulderCollection.generateBoulderFormation", function () {
 		expect(outsideLeft).toBe(0);
 		expect(outsideRight).toBe(0);
 	});
+
+	it("Will also clean up overlapping boulders.", function() {
+		let bc = new BoulderBlaster.BoulderCollection(stage, resourceHolder);
+		
+		bc.boulderBlocks.push(new BoulderBlaster.BoulderEntity(stage, 0, 0, 999, resourceHolder));
+		bc.boulderBlocks.push(new BoulderBlaster.BoulderEntity(stage, 0, 0, 999, resourceHolder));
+
+		expect(bc.boulderBlocks.filter( (item) => { return item.groupId == 999; }).length).toBe(2);
+		
+		bc.generateBoulderFormation();
+		
+		expect(bc.boulderBlocks.filter( (item) => { return item.groupId == 999; }).length).toBe(1);
+	});
 });
 
 describe("BoulderCollection.calculateFallingStatusOnBoulders", function () {
@@ -469,4 +482,67 @@ describe("BoulderCollection.setBoulderGroupBorders", function () {
 
 	});
 
+});
+
+describe("BoulderCollection.preMissileTargetBoulder", function () {
+	let stage;
+	let resourceHolder;
+	
+	beforeEach(function () {
+			stage = new PIXI.Container();
+			resourceHolder = new BoulderBlaster.ResourceHolder();
+  	});
+
+	it("Can select right boulder to get missile targeted.", function() {
+		// this.boulderBlocks = [];
+
+		let bc = new BoulderBlaster.BoulderCollection(stage, resourceHolder);
+
+		bc.boulderBlocks.push(new BoulderBlaster.BoulderEntity(stage, 1, 0, 1, resourceHolder));
+		bc.boulderBlocks.push(new BoulderBlaster.BoulderEntity(stage, 1, 1, 1, resourceHolder));
+		bc.boulderBlocks.push(new BoulderBlaster.BoulderEntity(stage, 1, 4, 1, resourceHolder));
+
+		expect(bc.boulderBlocks[1].missileTargeted).not.toBe(true);
+
+		bc.preMissileTargetBoulder(1, 3, -1);
+		
+		expect(bc.boulderBlocks[1].missileTargeted).toBe(true);
+	});
+
+	it("Will select next boulder to get missile targeted if first is already targeted.", function() {
+		// this.boulderBlocks = [];
+
+		let bc = new BoulderBlaster.BoulderCollection(stage, resourceHolder);
+
+		bc.boulderBlocks.push(new BoulderBlaster.BoulderEntity(stage, 1, 0, 1, resourceHolder));
+		bc.boulderBlocks.push(new BoulderBlaster.BoulderEntity(stage, 1, 1, 1, resourceHolder));
+		bc.boulderBlocks.push(new BoulderBlaster.BoulderEntity(stage, 1, 4, 1, resourceHolder));
+
+		expect(bc.boulderBlocks[0].missileTargeted).not.toBe(true);
+		expect(bc.boulderBlocks[1].missileTargeted).not.toBe(true);
+
+		bc.preMissileTargetBoulder(1, 3, -1);
+		
+		expect(bc.boulderBlocks[0].missileTargeted).not.toBe(true);
+		expect(bc.boulderBlocks[1].missileTargeted).toBe(true);
+
+		bc.preMissileTargetBoulder(1, 3, -1);
+
+		expect(bc.boulderBlocks[0].missileTargeted).toBe(true);
+		expect(bc.boulderBlocks[1].missileTargeted).toBe(true);
+	});
+
+	it("Will ignore boulders outside frame, y < 0.", function() {
+		// this.boulderBlocks = [];
+
+		let bc = new BoulderBlaster.BoulderCollection(stage, resourceHolder);
+
+		bc.boulderBlocks.push(new BoulderBlaster.BoulderEntity(stage, 1, -2, 1, resourceHolder));
+
+		expect(bc.boulderBlocks[0].missileTargeted).not.toBe(true);
+
+		bc.preMissileTargetBoulder(1, 3, -1);
+		
+		expect(bc.boulderBlocks[0].missileTargeted).not.toBe(true);
+	});
 });

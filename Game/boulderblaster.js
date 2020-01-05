@@ -173,7 +173,7 @@ var BoulderBlaster = {
 
   BoulderEntity: function (stage, x, y, group_id, resourceHolder) {
       this.boulderColor = 0x808080;
-      this.missileTargeted = false; // ToDo Test 2
+      this.missileTargeted = false;
     
     let boulderEntity = new PIXI.Container();
     boulderEntity.addChild(resourceHolder.getGraphic('boulder')); 
@@ -257,21 +257,29 @@ var BoulderBlaster = {
       if((bottom_made || right_made) && (start_x+1) < this.gridSquares && Math.random() > trigger) 
         this.boulderBlocks.push(new BoulderBlaster.BoulderEntity(this.gameStage, start_x+1, start_y+1, this.boulderFormationIdCount, resources));
         
-        this.setBoulderGroupBorders(this.boulderFormationIdCount);
+      this.setBoulderGroupBorders(this.boulderFormationIdCount);
 
-        // ToDo Test 3
-        // Check for overlapping boulders 
-        var gridMatrix = new Array(this.gridSquares);
-        for (let i = 0; i < gridMatrix.length; i++) {
-            gridMatrix[i] = new Array(this.gridSquares);
-        }
+      // Check for overlapping boulders 
+      var gridMatrix = new Array(this.gridSquares);
+      for (let i = 0; i < gridMatrix.length; i++) {
+          gridMatrix[i] = new Array(this.gridSquares);
+      }
 
-        for (let i = 0; i < this.boulderBlocks.length; i++) {
-            if (gridMatrix[this.boulderBlocks[i].gridX][this.boulderBlocks[i].gridY] == undefined)
-                gridMatrix[this.boulderBlocks[i].gridX][this.boulderBlocks[i].gridY] = i;
-            else if (gridMatrix[this.boulderBlocks[i].gridX][this.boulderBlocks[i].gridY] > 0)
-                this.removeBoulder(i);
-        }
+      var removeBouldersIndexes = [];
+
+      for (let i = 0; i < this.boulderBlocks.length; i++) {
+          if (gridMatrix[this.boulderBlocks[i].gridX][this.boulderBlocks[i].gridY] == undefined) {
+            gridMatrix[this.boulderBlocks[i].gridX][this.boulderBlocks[i].gridY] = i;
+          }
+          else if (gridMatrix[this.boulderBlocks[i].gridX][this.boulderBlocks[i].gridY] >= 0) {
+            removeBouldersIndexes.push(i);
+          }
+          
+      }
+
+      for(let i = removeBouldersIndexes.length-1; i > -1; i--){
+        this.removeBoulder(removeBouldersIndexes[i]);
+      }
     };
 
     this.calculateFallingStatusOnBoulders = function() {
@@ -466,35 +474,39 @@ var BoulderBlaster = {
           
         boulder.setEdges(top, left, bottom, right);
       });
-      }
+    }
 
-      this.preMissileTargetBoulder = function (gridX, gridY, direction) { // ToDo Test 2
-          // Only direction -1 supported
+    this.preMissileTargetBoulder = function (gridX, gridY, direction) {
+        // Only direction -1 supported
 
-          let possibleTargets = [this.gridSquares];
+        let possibleTargets = [];
 
-          this.boulderBlocks.forEach(function (block) {
-              if (block.gridX == gridX && (
-                  //(direction == 1 && block.gridY > gridY) ||
-                  (direction == -1 && block.gridY < gridY)
-              )) {
-                  possibleTargets[block.gridY] = block;
-              }
-          });
+        for(let i = 0; i < this.gridSquares; i++) {
+          possibleTargets.push(0);
+        }
 
-          if(possibleTargets.length == 0)
-              return;
+        this.boulderBlocks.forEach(function (block) {
+            if (block.gridX == gridX && (
+                //(direction == 1 && block.gridY > gridY) ||
+                (direction == -1 && block.gridY < gridY)
+                && block.gridY >= 0
+            )) {
+                possibleTargets[block.gridY] = block;
+            }
+        });
 
-          for (let i = gridX; i > 0; i += direction) {
-              if (possibleTargets[i] == undefined)
-                  continue;
+        for (let i = gridX; i >= 0; i += direction) {
+            if (possibleTargets[i] === 0)
+                continue;
 
-              if (possibleTargets[i].missileTargeted === true)
-                  continue;
-
-              possibleTargets[i].missileTargeted = true;
-          }
-      }
+            if (possibleTargets[i].missileTargeted === true) {
+               continue;
+            }
+ 
+            possibleTargets[i].missileTargeted = true;
+            break;
+        }
+    }
 
   }, 
 
@@ -618,7 +630,7 @@ var BoulderBlaster = {
       for (let i = 0; i < b.length; i++) {
           if (b[i].gridX === playerBlock.gridX &&
               b[i].gridY === playerBlock.gridY &&
-              b[i].missileTargeted !== true ) { // ToDo Test 2
+              b[i].missileTargeted !== true ) {
               return true;
           }
       }
@@ -1131,9 +1143,9 @@ var BoulderBlaster = {
     let explosionHandler = eh;
     let overlayHandler = oh;
     let scoreHandler = sh;
-      let soundHandler = soh;
+    let soundHandler = soh;
 
-      let keyDown = false;
+    let keyDown = false;
     
     let boulderNeedsToExplode = function (toDestroy) {
       explosionHandler.placeExplodingBlock(toDestroy.graphic.position.x, toDestroy.graphic.position.y, toDestroy.boulderColor);
@@ -1162,57 +1174,53 @@ var BoulderBlaster = {
         startY -= 4; 
       }
 
-        soundHandler.playIntroSound();
+      soundHandler.playIntroSound();
 
-     while(bbCollection.boulderBlocks.filter(block => block.isFalling === true).length > 0) {
+      while(bbCollection.boulderBlocks.filter(block => block.isFalling === true).length > 0) {
         bbCollection.moveAllFallingBouldersDown();
         bbCollection.calculateFallingStatusOnBoulders();
       }
       blocksToMove = true;
     };
 
-      this.onKeyUp = function (key) { // ToDo Test 3
-          keyDown = false;
-      }
+    this.onKeyUp = function (key) {
+        keyDown = false;
+    }
 
-      this.onKeyDown = function (key) {
-          if (keyDown === true) // ToDo Test 3
-              return;
-          keyDown = true;
+    this.onKeyDown = function (key) {
+      if (keyDown === true)
+          return;
+      keyDown = true;
 
-      if (key.keyCode == 78) { // ToDo Test
+      if (key.keyCode == 78) {
         soundHandler.soundOnOff();
         return;
       }
 
-      if(showingHelp === true) // ToDo Test
+      if(showingHelp === true)
       {
         overlayHandler.clearStage();
         showingHelp = false;
         
-        if(gameState !== stateStart) {  // ToDo Test
+        if(gameState !== stateStart) {
           key.preventDefault();
           return;
         }
       }
-      else if(key.keyCode === 72)// h 72  // ToDo Test
+      else if(key.keyCode === 72)// h 72
       {
         overlayHandler.showHelp();
         showingHelp = true;
         key.preventDefault();
         return;
       }
-      
-      // ToDo: Test "any" keypress?
+
       if(key.keyCode === 82 || (gameState === stateStart) || (key.keyCode === 32 && gameState === stateGameOver) ) { // R  (&& key.keyCode === 32 and Space)
         setGameStage();
         key.preventDefault();
         return;
       }
 
-      /*if(blocksToMove) // Wait for blocks to stop moving, before allowing next move.
-        return;*/
-    
       if (!playerBlock.isStaged)
         return;
     
@@ -1267,7 +1275,7 @@ var BoulderBlaster = {
     var keyFiresMissle = function (keyCode) {
       if (keyCode === 87 || keyCode === 38) { // W Key is 87, Up arrow is 87
           missileHandler.createMissile(playerBlock.gridX, playerBlock.gridY, -1);
-          bbCollection.preMissileTargetBoulder(playerBlock.gridX, playerBlock.gridY, -1); // ToDo Test 2
+          bbCollection.preMissileTargetBoulder(playerBlock.gridX, playerBlock.gridY, -1);
         soundHandler.playLaserSound();
         return true;
       }
@@ -1293,7 +1301,7 @@ var BoulderBlaster = {
             playerBlock.placePlayer(); gameState = stateGameOn; 
           }
           else if(boom) {
-            scoreHandler.increaseScore(1); // ToDo Test
+            scoreHandler.increaseScore(1);
           }
         }
       }

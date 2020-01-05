@@ -162,4 +162,17 @@ describe("CollisionHandler.checkPlayerBoulderCollision", function () {
 		expect(result2).toBe(false);
 	});
 	
+	it("Won't collied with boulds marked as Missile Targeted.", function() {
+		let ch = new BoulderBlaster.CollisionHandler();
+		
+		//bbcMock = { boulderBlocks: [boulderMock] };
+		boulderMock.missileTargeted = true;
+
+
+		let result = ch.checkPlayerBoulderCollision(playerMock, bbcMock);
+		
+		expect(result).toBe(false);
+		
+	});
+
 });

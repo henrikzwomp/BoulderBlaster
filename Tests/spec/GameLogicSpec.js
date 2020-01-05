@@ -151,6 +151,7 @@ describe("GameLogic.onKeyDown", function () {
 		playerBlock.lastGridXMove = 0;
 		
 		logic.onKeyDown(key);
+		logic.onKeyUp(key);
 
 		expect(playerBlock.gridX).toBe(0);
 		expect(playerBlock.lastGridXMove).toBe(-1);
@@ -158,6 +159,7 @@ describe("GameLogic.onKeyDown", function () {
 		playerBlock.lastGridXMove = 0;
 
 		logic.onKeyDown(key);
+		logic.onKeyUp(key);
 
 		expect(playerBlock.gridX).toBe(0);
 		expect(playerBlock.lastGridXMove).toBe(0);
@@ -186,26 +188,6 @@ describe("GameLogic.onKeyDown", function () {
 		expect(playerBlock.gridX).toBe(playerBlock.gridSquares-1);
 		expect(playerBlock.lastGridXMove).toBe(0);
 	});
-
-	// Removed this restriction
-	/*it("Will not accept player move until animation is complete.", function() {
-		let key = {keyCode: 68, preventDefault: function() {}}; // D 
-
-		let logic = new BoulderBlaster.GameLogic(app, size, playerBlock, missileHandler, 
-			bbCollection, collisionHandler, explosionHandler, overlayHandler, scoreHandler);
-
-		playerBlock.placePlayer();
-		playerBlock.gridX = 0;
-		playerBlock.lastGridXMove = 0;
-		
-		logic.onKeyDown(key);
-
-		expect(playerBlock.gridX).toBe(1);
-
-		logic.onKeyDown(key);
-
-		expect(playerBlock.gridX).toBe(1);
-	});*/
 
 	it("Can shoot missile up.", function() {
 		let key = {keyCode: 87, preventDefault: function() {}}; // W
@@ -285,9 +267,163 @@ describe("GameLogic.onKeyDown", function () {
 		expect(bbCollection.generateBoulderFormation).toHaveBeenCalled();
 	});
 
-	// Sound on off
-	// Show help on off
-	// Reset 
+	it("Will Turn Sound On/Off with N key.", function() {
+		let key = {keyCode: 78, preventDefault: function() {}}; // N
+
+		let logic = new BoulderBlaster.GameLogic(playerBlock, missileHandler, 
+			bbCollection, collisionHandler, explosionHandler, overlayHandler, 
+			scoreHandler, soundHandler);
+
+		playerBlock.placePlayer();
+		
+		spyOn(soundHandler, "soundOnOff"); //.and.callThrough();
+
+		logic.onKeyDown(key);
+		logic.onKeyUp(key);
+
+		expect(soundHandler.soundOnOff).toHaveBeenCalled();
+
+		logic.onKeyDown(key);
+		logic.onKeyUp(key);
+
+		expect(soundHandler.soundOnOff).toHaveBeenCalledTimes(2);
+	});
+
+	it("Can toggle Help screen on/off.", function() {
+		let hKey = {keyCode: 72, preventDefault: function() {}}; // H
+		let aKey = {keyCode: 65, preventDefault: function() {}}; // A 
+
+		let logic = new BoulderBlaster.GameLogic(playerBlock, missileHandler, 
+			bbCollection, collisionHandler, explosionHandler, overlayHandler, 
+			scoreHandler, soundHandler);
+
+		playerBlock.placePlayer();
+		
+		spyOn(overlayHandler, "showHelp").and.callThrough();
+		spyOn(overlayHandler, "clearStage").and.callThrough();
+
+		logic.onKeyDown(hKey);
+		logic.onKeyUp(hKey);
+
+		expect(overlayHandler.showHelp).toHaveBeenCalled();
+
+		logic.onKeyDown(aKey);
+		logic.onKeyUp(aKey);
+
+		expect(overlayHandler.clearStage).toHaveBeenCalled();
+	});
+
+	it("Turning help screen off will start the game if not already started.", function() {
+		let hKey = {keyCode: 72, preventDefault: function() {}}; // H
+		let aKey = {keyCode: 65, preventDefault: function() {}}; // A 
+
+		let logic = new BoulderBlaster.GameLogic(playerBlock, missileHandler, 
+			bbCollection, collisionHandler, explosionHandler, overlayHandler, 
+			scoreHandler, soundHandler);
+
+		playerBlock.placePlayer();
+
+		logic.startGame();
+		
+		spyOn(overlayHandler, "showHelp").and.callThrough();
+		spyOn(overlayHandler, "clearStage").and.callThrough();
+		spyOn(bbCollection, "generateBoulderFormation").and.callThrough();
+		spyOn(playerBlock, "placePlayer").and.callThrough();
+		spyOn(bbCollection, "clearBoulders").and.callThrough();
+
+		logic.onKeyDown(hKey);
+		logic.onKeyUp(hKey);
+
+		expect(overlayHandler.showHelp).toHaveBeenCalled();
+		expect(bbCollection.generateBoulderFormation).not.toHaveBeenCalled();
+
+		logic.onKeyDown(aKey);
+		logic.onKeyUp(aKey);
+
+		for(let i = 0; i < 240; i++) // Run through intro.
+		{
+			logic.gameLoop(0);
+		}
+
+		expect(overlayHandler.clearStage).toHaveBeenCalled();
+		expect(bbCollection.generateBoulderFormation).toHaveBeenCalled();
+		expect(playerBlock.placePlayer).toHaveBeenCalled();
+		expect(bbCollection.clearBoulders).toHaveBeenCalled();
+	});
+
+	it("Any key will start game.", function() {
+		let aKey = {keyCode: 65, preventDefault: function() {}}; // A 
+
+		let logic = new BoulderBlaster.GameLogic(playerBlock, missileHandler, 
+			bbCollection, collisionHandler, explosionHandler, overlayHandler, 
+			scoreHandler, soundHandler);
+
+		playerBlock.placePlayer();
+
+		logic.startGame();
+		
+		spyOn(bbCollection, "generateBoulderFormation").and.callThrough();
+		spyOn(playerBlock, "placePlayer").and.callThrough();
+		spyOn(bbCollection, "clearBoulders").and.callThrough();
+
+		logic.onKeyDown(aKey);
+		logic.onKeyUp(aKey);
+
+		for(let i = 0; i < 240; i++) // Run through intro.
+		{
+			logic.gameLoop(0);
+		}
+
+		expect(bbCollection.generateBoulderFormation).toHaveBeenCalled();
+		expect(playerBlock.placePlayer).toHaveBeenCalled();
+		expect(bbCollection.clearBoulders).toHaveBeenCalled();
+	});
+
+	it("Will Missile target Boulders when shooting up.", function() {
+		let key = {keyCode: 87, preventDefault: function() {}}; // W
+
+		let logic = new BoulderBlaster.GameLogic(playerBlock, missileHandler, 
+			bbCollection, collisionHandler, explosionHandler, overlayHandler, 
+			scoreHandler, soundHandler);
+
+		playerBlock.placePlayer();
+		
+		spyOn(bbCollection, "preMissileTargetBoulder").and.callThrough();
+
+		logic.onKeyDown(key);
+
+		expect(bbCollection.preMissileTargetBoulder).toHaveBeenCalled();
+	});
+
+	it("onKeyDown actions will not be trigged until onKeyUp has been trigged.", function() {
+		let key = {keyCode: 65, preventDefault: function() {}}; // A 
+
+		let logic = new BoulderBlaster.GameLogic(playerBlock, missileHandler, 
+			bbCollection, collisionHandler, explosionHandler, overlayHandler, 
+			scoreHandler, soundHandler);
+
+		playerBlock.placePlayer();
+		playerBlock.gridX = 4;
+	
+		logic.onKeyDown(key);
+		logic.onKeyUp(key);
+
+		expect(playerBlock.gridX).toBe(3);
+
+		logic.onKeyDown(key);
+
+		expect(playerBlock.gridX).toBe(2);
+
+		logic.onKeyDown(key);
+
+		expect(playerBlock.gridX).toBe(2);
+
+		logic.onKeyUp(key);
+		logic.onKeyDown(key);
+
+		expect(playerBlock.gridX).toBe(1);
+	});
+
 });
 
 describe("GameLogic.gameLoop", function () {
@@ -359,7 +495,10 @@ describe("GameLogic.gameLoop", function () {
 		spyOn(bbCollection.boulderBlocks[0], "updateBlockGraphicPosition").and.callThrough();
 
 		logic.onKeyDown(key);
-		logic.gameLoop(0);
+		logic.onKeyUp(key);
+		
+		for(let i = 0; i < 100; i++)
+			logic.gameLoop(0);
 
 		expect(playerBlock.updateBlockGraphicPosition).toHaveBeenCalled();
 		expect(bbCollection.boulderBlocks[0].updateBlockGraphicPosition).toHaveBeenCalled();
@@ -393,6 +532,31 @@ describe("GameLogic.gameLoop", function () {
 
 		expect(bbCollection.clearBottomRowIfComplete).toHaveBeenCalled();
 		expect(explosionHandler.placeExplodingBlock).toHaveBeenCalled();
+	});
+
+	it("Will increse score when bottom row is complete.", function() { 
+		let logic = new BoulderBlaster.GameLogic(playerBlock, missileHandler, 
+			bbCollection, collisionHandler, explosionHandler, overlayHandler, 
+			scoreHandler, soundHandler);
+
+		let key = {keyCode: 65, preventDefault: function() {}}; // A 
+
+		playerBlock.placePlayer();
+		
+		spyOn(bbCollection, "clearBottomRowIfComplete")
+			.and.callFake(function() { return true; } );
+		spyOn(scoreHandler, "increaseScore");
+
+		logic.onKeyDown(key);
+
+		expect(bbCollection.clearBottomRowIfComplete).not.toHaveBeenCalled();
+		expect(scoreHandler.increaseScore).not.toHaveBeenCalled();
+
+		for(let i = 0; i < 100; i++)
+			logic.gameLoop(0);
+
+		expect(bbCollection.clearBottomRowIfComplete).toHaveBeenCalled();
+		expect(scoreHandler.increaseScore).toHaveBeenCalled();
 		
 	});
 });
