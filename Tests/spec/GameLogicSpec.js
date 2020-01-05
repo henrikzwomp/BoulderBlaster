@@ -124,6 +124,7 @@ describe("GameLogic.onKeyDown", function () {
 		playerBlock.lastGridXMove = 0;
 		
 		logic.onKeyDown(key);
+		logic.onKeyUp(key);
 
 		expect(playerBlock.gridX).toBe(1);
 		expect(playerBlock.lastGridXMove).toBe(0);
@@ -132,6 +133,7 @@ describe("GameLogic.onKeyDown", function () {
 		playerBlock.gridX = 1;
 
 		logic.onKeyDown(key);
+		logic.onKeyUp(key);
 
 		expect(playerBlock.gridX).toBe(0);
 		expect(playerBlock.lastGridXMove).toBe(-1);
@@ -277,6 +279,7 @@ describe("GameLogic.onKeyDown", function () {
 				logic.gameLoop(null);
 
 			logic.onKeyDown(key);
+			logic.onKeyUp(key);
 		}
 
 		expect(bbCollection.generateBoulderFormation).toHaveBeenCalled();

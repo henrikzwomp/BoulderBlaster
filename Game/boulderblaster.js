@@ -618,7 +618,7 @@ var BoulderBlaster = {
       for (let i = 0; i < b.length; i++) {
           if (b[i].gridX === playerBlock.gridX &&
               b[i].gridY === playerBlock.gridY &&
-              b[i].missileTargeted == false ) { // ToDo Test 2
+              b[i].missileTargeted !== true ) { // ToDo Test 2
               return true;
           }
       }
