@@ -805,15 +805,17 @@ var BoulderBlaster = {
       bgBox.alpha = 0.5;
       stage.addChild(bgBox);
       
-      let help_text = new PIXI.Text('This is a turn based game with the object to complete a full row of \n' + 
-      'boulders at the bottom as many times as possible. Use the laser beam\n' + 
-      'to reshape boulders and move around to avoid any collision.\n' + 
+      let help_text = new PIXI.Text(
+      'This is a turn based game where you play as a space ship.\n' + 
+      'You need to move to avoid falling boulders and shoot lasers\n' + 
+      'to reshape the them. All to complete a full row of boulders \n' + 
+      'at the bottom as many times as possible.\n' + 
       '\n' + 
       'Use Left/Right or A/D to move\n' + 
       '\n' + 
       'Use Up/Down or W/D to fire\n' + 
       '\n' + 
-      'Press N to toggle Noise' +
+      'Press N to toggle Noise\n' +
       '\n' + 
       'Press any key to continue', help_style);
       
@@ -1296,8 +1298,8 @@ var BoulderBlaster = {
         
         if(blocksToMove === false) {
           let boom = bbCollection.clearBottomRowIfComplete(boulderNeedsToExplode);
-            if (gameState === stateRunningIntro) { 
-                soundHandler.stopIntroSoundWithDelay();
+          if (gameState === stateRunningIntro) { 
+            soundHandler.stopIntroSoundWithDelay();
             playerBlock.placePlayer(); gameState = stateGameOn; 
           }
           else if(boom) {
@@ -1307,7 +1309,7 @@ var BoulderBlaster = {
       }
       explosionHandler.moveExplodingBlocks();
       missileHandler.moveMissiles();
-        CollisionHandler.detectMissileHit(missileHandler, bbCollection, boulderNeedsToExplode);
+      CollisionHandler.detectMissileHit(missileHandler, bbCollection, boulderNeedsToExplode);
       playerBlock.updateFlames();
     };
   },
@@ -1338,6 +1340,16 @@ var BoulderBlaster = {
       div.style.margin = "auto";
       div.appendChild(app.view);
       document.body.appendChild(div);
+
+      let aboutDiv = document.createElement("div");
+      aboutDiv.style.width = "576px";
+      aboutDiv.style.margin = "auto";
+      aboutDiv.style.fontFamily = "sans-serif";
+      aboutDiv.style.fontSize = "small";
+      aboutDiv.style.color = "#ffffff";
+      aboutDiv.style.textAlign = "center";
+      aboutDiv.innerHTML = '<a href="https://zwomp.com/?page_id=991" >About</a> | <a href="https://github.com/henrikzwomp/BoulderBlaster" >Github</a>';
+      document.body.appendChild(aboutDiv);
       
       mainStage = new PIXI.Container();
       
@@ -1370,6 +1382,7 @@ var BoulderBlaster = {
       resourceHolder.configureLoader(loader);
       loader.onProgress.add(lbar.loaded);
       loader.load( (loader, resources) => {this.setGameStage(loader, resources); } ); 
+
     }
 
     this.setGameStage = function(loader, resources) {
