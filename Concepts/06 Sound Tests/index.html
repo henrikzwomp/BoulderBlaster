@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+<meta charset="UTF-8">
+<title>Boulder Blaster - Sound Tests</title>
+</head>
+<body translate="no" >
+<script >
+let context = new AudioContext();
+
+function MoveSound() {
+  let oscillator = createOscillator();
+  
+  oscillator.frequency.value = 49;
+  oscillator.start();
+  oscillator.stop(context.currentTime + 0.2);
+}
+
+function LaserSound() {
+  let oscillator = createOscillator();
+  
+  let start_fq = 250;
+  oscillator.frequency.value = start_fq;
+  for(let i = 1; i < 11; i++){
+    oscillator.frequency.setValueAtTime(
+      start_fq - (10*i), 
+      context.currentTime + 0.01 * i);
+  }
+  oscillator.start(context.currentTime);
+  oscillator.stop(context.currentTime + 0.18);
+}
+
+function ExploSound() {
+  let oscillator = createOscillator();
+  
+  let start_fq = 59;
+  oscillator.frequency.value = start_fq;
+
+  for(let i = 1; i < 12; i++){
+    oscillator.frequency.setValueAtTime(
+      start_fq - (i * 3), 
+      context.currentTime + (0.01 * i));
+  }
+
+  oscillator.start(context.currentTime);
+  oscillator.stop(context.currentTime + 0.20);
+}
+
+function IntroSound21() {
+  let maxGain = 0.05;
+  
+  let oscillator = context.createOscillator();
+  oscillator.type = "square";
+
+  let gain = context.createGain()
+  gain.gain.value = maxGain;
+
+  oscillator.connect(gain);
+  gain.connect(context.destination);
+  
+  let start_fq = 59;
+  let fq_change = 6;
+  let blipp_lenght = 0.02;
+  
+  let blipp_start = context.currentTime;
+  
+  for(let i = 1; i < 40; i++){
+    oscillator.frequency.setValueAtTime(start_fq, blipp_start);
+    gain.gain.setValueAtTime(maxGain, blipp_start);
+    gain.gain.setValueAtTime(0, blipp_start + blipp_lenght);
+    
+    blipp_start += (blipp_lenght*2);
+    start_fq += fq_change;
+  }
+  
+  oscillator.start(context.currentTime);
+  oscillator.stop(blipp_start);
+}
+
+function createOscillator() {
+  let oscillator = context.createOscillator();
+  oscillator.type = "square";
+
+  let gain = context.createGain()
+  gain.gain.value = 0.05;
+
+  oscillator.connect(gain);
+  gain.connect(context.destination);
+  
+  return oscillator;
+}
+</script>
+<button onClick="MoveSound(); return false;" >Move</button>
+<button onClick="LaserSound(); return false;" >Laser</button>
+<button onClick="ExploSound(); return false;" >Explosion</button>
+<button onClick="IntroSound21(); return false;" >Intro</button>
+</body>
+</html>
