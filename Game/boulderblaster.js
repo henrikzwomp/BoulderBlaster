@@ -922,6 +922,10 @@ var BoulderBlaster = {
           topScore = 0;
         }
       }
+
+      if(isNaN(topScore))
+        topScore = 0;
+        
       return topScore;
     }
   }, 
